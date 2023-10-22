@@ -20,7 +20,7 @@ git clone https://github.com/X9Yovix/carpool_backend.git
 cd carpool_backend
 ```
 
-4. Build the project using Maven:
+3. Build the project using Maven:
 
 ```
 mvn clean install
