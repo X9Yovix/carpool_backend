@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -22,6 +23,15 @@ public class JwtService {
     @Value("${carpool_app.security.jwt.expiration}")
     private long jwtExpirationMs; //1h
 
+    public String extractUsername(String jwtToken) {
+        return extractClaim(jwtToken, Claims::getSubject);
+    }
+
+    public <T> T extractClaim(String jwtToken, Function<Claims, T> claimResolver) {
+        final Claims claims = extractAllClaims(jwtToken);
+        return claimResolver.apply(claims);
+    }
+
     public Claims extractAllClaims(String token) {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         return (Claims) Jwts.parser()
@@ -30,17 +40,12 @@ public class JwtService {
                 .parse(token)
                 .getPayload();
     }
-    public <T> T extractClaim(String jwtToken, Function<Claims, T> claimResolver){
-        final Claims claims = extractAllClaims(jwtToken);
-        return claimResolver.apply(claims);
-    }
-    public String extractUsername(String jwtToken) {
-        return extractClaim(jwtToken, Claims::getSubject);
-    }
-    //Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret))
 
+    public String generateToken(UserDetails userDetails) {
+        return generateToken(new HashMap<>(), userDetails);
+    }
 
-    public String generateToken(Map<String, Objects> extraClaims, UserDetails userDetails){
+    public String generateToken(Map<String, Objects> extraClaims, UserDetails userDetails) {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         //.signWith(Keys.hmacShaKeyFor(keyBytes),SignatureAlgorithm.HS256)
         return Jwts
@@ -53,8 +58,8 @@ public class JwtService {
                 .compact();
     }
 
-    public boolean isTokenValid(String jwtToken,UserDetails userDetails){
-        final String userName =  extractUsername(jwtToken);
+    public boolean isTokenValid(String jwtToken, UserDetails userDetails) {
+        final String userName = extractUsername(jwtToken);
         return (userName.equals(userDetails.getUsername()) && !isTokenExpired(jwtToken));
     }
 
