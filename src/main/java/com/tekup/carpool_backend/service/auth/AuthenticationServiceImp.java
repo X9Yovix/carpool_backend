@@ -11,6 +11,7 @@ import com.tekup.carpool_backend.payload.response.AuthenticationResponse;
 import com.tekup.carpool_backend.repository.token.TokenRepository;
 import com.tekup.carpool_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,22 +25,30 @@ public class AuthenticationServiceImp implements AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final TokenRepository tokenRepository;
+
     public AuthenticationResponse register(RegisterRequest request) {
-        User user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(UserRole.valueOf(request.getRole()))
-                .build();
-        User savedUser = userRepository.save(user);
-        String jwtToken = jwtService.generateToken(user);
+        try {
+            User user = User.builder()
+                    .firstName(request.getFirstName())
+                    .lastName(request.getLastName())
+                    .email(request.getEmail())
+                    .password(passwordEncoder.encode(request.getPassword()))
+                    .role(UserRole.valueOf(request.getRole()))
+                    .build();
 
-        saveUserToken(savedUser, jwtToken);
+            User savedUser = userRepository.save(user);
+            String jwtToken = jwtService.generateToken(user);
 
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
-                .build();
+            saveUserToken(savedUser, jwtToken);
+
+            return AuthenticationResponse.builder()
+                    .token(jwtToken)
+                    .build();
+        } catch (DataIntegrityViolationException e) {
+            return AuthenticationResponse.builder()
+                    .token(null)
+                    .build();
+        }
     }
 
     private void saveUserToken(User user, String jwtToken) {
@@ -63,9 +72,23 @@ public class AuthenticationServiceImp implements AuthenticationService {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
         String jwtToken = jwtService.generateToken(user);
 
+        revokeAllUserTokens(user);
         saveUserToken(user, jwtToken);
+
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
+    }
+
+    private void revokeAllUserTokens(User user) {
+        var validUserTokens = tokenRepository.findAllValidTokensByUser(user.getId());
+        if (validUserTokens.isEmpty()) {
+            return;
+        }
+        validUserTokens.forEach(t -> {
+            t.setRevoked(true);
+            t.setExpired(true);
+        });
+        tokenRepository.saveAll(validUserTokens);
     }
 }
