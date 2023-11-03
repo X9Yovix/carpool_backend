@@ -2,17 +2,23 @@ package com.tekup.carpool_backend.service.user;
 
 import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.model.user.UserRole;
+import com.tekup.carpool_backend.payload.request.ChangePasswordRequest;
 import com.tekup.carpool_backend.repository.user.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImp implements UserService {
-    @Autowired
-    private UserRepository userRepository;
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public boolean seedInitialUsers() {
         User admin1 = new User(1L, "Ali", "Ben Ali", "admin@gmail.com", BCrypt.hashpw("adminpassword", BCrypt.gensalt()), UserRole.ADMIN);
@@ -21,5 +27,19 @@ public class UserServiceImp implements UserService {
 
         List<User> savedUsers = this.userRepository.saveAll(List.of(admin1, driver1, passenger1));
         return !savedUsers.isEmpty();
+    }
+
+    @Override
+    public String changePassword(ChangePasswordRequest request, Principal connectedUser) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        if(!this.passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())){
+            return "Wrong password";
+        }
+        if(!request.getNewPassword().equals(request.getConfirmationPassword())){
+            return "NewPassword & ConfirmationPassword are not the same";
+        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        return "Password updated";
     }
 }

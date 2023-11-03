@@ -1,12 +1,12 @@
 package com.tekup.carpool_backend.controller.user;
 
+import com.tekup.carpool_backend.payload.request.ChangePasswordRequest;
 import com.tekup.carpool_backend.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/users")
@@ -28,5 +28,10 @@ public class UserController {
     @GetMapping("/admin")
     public ResponseEntity<String> onlyAdmin() {
         return ResponseEntity.ok().body("protected route and for admin only");
+    }
+
+    @PatchMapping("/update/password")
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request, Principal connectedUser){
+        return ResponseEntity.ok().body(this.service.changePassword(request,connectedUser));
     }
 }
