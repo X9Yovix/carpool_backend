@@ -6,19 +6,19 @@
   <table>
     <tr>
       <td align="center">
-        <a href="https://github.com/username1">
+        <a href="https://github.com/X9Yovix">
           <img src="https://avatars.githubusercontent.com/X9Yovix" width="100" height="100" alt="Contributor 1"><br />
           <sub><b>Karim Ouazzou</b></sub>
         </a>
       </td>
       <td align="center">
-        <a href="https://github.com/username2">
+        <a href="https://github.com/nada203123">
           <img src="https://avatars.githubusercontent.com/nada203123" width="100" height="100" alt="Contributor 2"><br />
           <sub><b>Nada Ghribi</b></sub>
         </a>
       </td>
       <td align="center">
-        <a href="https://github.com/username3">
+        <a href="https://github.com/yassineraddaoui">
           <img src="https://avatars.githubusercontent.com/yassineraddaoui" width="100" height="100" alt="Contributor 3"><br />
           <sub><b>Yassine Raddaoui</b></sub>
         </a>
