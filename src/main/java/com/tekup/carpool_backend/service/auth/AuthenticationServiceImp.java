@@ -3,19 +3,19 @@ package com.tekup.carpool_backend.service.auth;
 import com.tekup.carpool_backend.config.jwt.JwtService;
 import com.tekup.carpool_backend.mail.EmailSender;
 import com.tekup.carpool_backend.mail.Otp;
+import com.tekup.carpool_backend.model.password.ResetPassword;
 import com.tekup.carpool_backend.model.token.Token;
 import com.tekup.carpool_backend.model.token.TokenType;
 import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.model.user.UserRole;
-import com.tekup.carpool_backend.payload.request.LoginRequest;
-import com.tekup.carpool_backend.payload.request.RegenerateOtpRequest;
-import com.tekup.carpool_backend.payload.request.RegisterRequest;
-import com.tekup.carpool_backend.payload.request.VerifyAccountRequest;
+import com.tekup.carpool_backend.payload.request.*;
 import com.tekup.carpool_backend.payload.response.LoginResponse;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
+import com.tekup.carpool_backend.repository.password.ResetPasswordRepository;
 import com.tekup.carpool_backend.repository.token.TokenRepository;
 import com.tekup.carpool_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +35,10 @@ public class AuthenticationServiceImp implements AuthenticationService {
     private final TokenRepository tokenRepository;
     private final Otp otpCmp;
     private final EmailSender emailSenderCmp;
+    private final ResetPasswordRepository resetPasswordRepository;
+
+    @Value("${carpool_app.frontend.url}")
+    private String frontUrl;
 
     public MessageResponse register(RegisterRequest request) {
         String otpCode = otpCmp.generateOtp();
@@ -156,5 +161,28 @@ public class AuthenticationServiceImp implements AuthenticationService {
                     .message("Your account is already verified. You have access to the platform")
                     .build();
         }
+    }
+
+    public MessageResponse forgotPassword(ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        String url = generateResetToken(user);
+        emailSenderCmp.sendResetPassword(request.getEmail(), url);
+        return MessageResponse.builder()
+                .message("Password reset instructions have been sent to your email")
+                .build();
+    }
+
+    public String generateResetToken(User user) {
+        UUID uuid = UUID.randomUUID();
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        LocalDateTime expirationDateTime = currentDateTime.plusMinutes(30);
+        ResetPassword resetToken = ResetPassword.builder()
+                .token(uuid.toString())
+                .expirationDate(expirationDateTime)
+                .user(user)
+                .build();
+
+        ResetPassword token = resetPasswordRepository.save(resetToken);
+        return frontUrl + "/reset-password/" + token.getToken();
     }
 }
