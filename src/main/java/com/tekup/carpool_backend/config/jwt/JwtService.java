@@ -47,7 +47,6 @@ public class JwtService {
 
     public String generateToken(Map<String, Objects> extraClaims, UserDetails userDetails) {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-        //.signWith(Keys.hmacShaKeyFor(keyBytes),SignatureAlgorithm.HS256)
         return Jwts
                 .builder()
                 .claims(extraClaims)

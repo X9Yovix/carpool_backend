@@ -6,5 +6,6 @@ import java.security.Principal;
 
 public interface UserService {
     boolean seedInitialUsers();
+
     String changePassword(ChangePasswordRequest email, Principal connectedUser);
 }

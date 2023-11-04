@@ -2,7 +2,8 @@ package com.tekup.carpool_backend.controller.auth;
 
 import com.tekup.carpool_backend.payload.request.LoginRequest;
 import com.tekup.carpool_backend.payload.request.RegisterRequest;
-import com.tekup.carpool_backend.payload.response.AuthenticationResponse;
+import com.tekup.carpool_backend.payload.response.LoginResponse;
+import com.tekup.carpool_backend.payload.response.RegisterResponse;
 import com.tekup.carpool_backend.service.auth.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +20,13 @@ public class AuthenticationController {
     private final AuthenticationService service;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(this.service.register(request));
+    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(service.register(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(this.service.login(request));
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(service.login(request));
     }
 
 }

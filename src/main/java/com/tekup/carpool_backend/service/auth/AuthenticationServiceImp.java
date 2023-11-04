@@ -1,21 +1,25 @@
 package com.tekup.carpool_backend.service.auth;
 
 import com.tekup.carpool_backend.config.jwt.JwtService;
+import com.tekup.carpool_backend.mail.EmailSender;
+import com.tekup.carpool_backend.mail.Otp;
 import com.tekup.carpool_backend.model.token.Token;
 import com.tekup.carpool_backend.model.token.TokenType;
 import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.model.user.UserRole;
 import com.tekup.carpool_backend.payload.request.LoginRequest;
 import com.tekup.carpool_backend.payload.request.RegisterRequest;
-import com.tekup.carpool_backend.payload.response.AuthenticationResponse;
+import com.tekup.carpool_backend.payload.response.LoginResponse;
+import com.tekup.carpool_backend.payload.response.RegisterResponse;
 import com.tekup.carpool_backend.repository.token.TokenRepository;
 import com.tekup.carpool_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -25,30 +29,27 @@ public class AuthenticationServiceImp implements AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final TokenRepository tokenRepository;
+    private final Otp otpCmp;
+    private final EmailSender emailSenderCmp;
 
-    public AuthenticationResponse register(RegisterRequest request) {
-        try {
-            User user = User.builder()
-                    .firstName(request.getFirstName())
-                    .lastName(request.getLastName())
-                    .email(request.getEmail())
-                    .password(passwordEncoder.encode(request.getPassword()))
-                    .role(UserRole.valueOf(request.getRole()))
-                    .build();
+    public RegisterResponse register(RegisterRequest request) {
+        String otpCode = otpCmp.generateOtp();
+        User user = User.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(UserRole.valueOf(request.getRole()))
+                .otp(otpCode)
+                .otpGeneratedTime(LocalDateTime.now())
+                .build();
 
-            User savedUser = userRepository.save(user);
-            String jwtToken = jwtService.generateToken(user);
+        User savedUser = userRepository.save(user);
 
-            saveUserToken(savedUser, jwtToken);
-
-            return AuthenticationResponse.builder()
-                    .token(jwtToken)
-                    .build();
-        } catch (DataIntegrityViolationException e) {
-            return AuthenticationResponse.builder()
-                    .token(null)
-                    .build();
-        }
+        emailSenderCmp.sendOtpVerification(savedUser.getEmail(), otpCode);
+        return RegisterResponse.builder()
+                .message("Registration done, check your email to verify your account with the OTP code")
+                .build();
     }
 
     private void saveUserToken(User user, String jwtToken) {
@@ -62,7 +63,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         tokenRepository.save(token);
     }
 
-    public AuthenticationResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -75,7 +76,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         revokeAllUserTokens(user);
         saveUserToken(user, jwtToken);
 
-        return AuthenticationResponse.builder()
+        return LoginResponse.builder()
                 .token(jwtToken)
                 .build();
     }

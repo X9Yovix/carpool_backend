@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -41,11 +42,20 @@ public class User implements UserDetails {
     @Column(name = "role", nullable = false)
     private UserRole role;
 
+    @Column(name = "verified", nullable = false, columnDefinition = "boolean default false")
+    private boolean verified;
+
+    @Column(name = "otp")
+    private String otp;
+
+    @Column(name = "otp_generated_time")
+    private LocalDateTime otpGeneratedTime;
+
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
 
     public User(Long id, String firstName, String lastName, String email, String password, UserRole role) {
-        this.id=id;
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;

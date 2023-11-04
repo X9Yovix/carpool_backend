@@ -17,7 +17,7 @@ public class UserController {
 
     @PostMapping("/seed")
     public ResponseEntity<Boolean> seedUsers() {
-        return ResponseEntity.ok().body(this.service.seedInitialUsers());
+        return ResponseEntity.ok().body(service.seedInitialUsers());
     }
 
     @GetMapping("/protected")
@@ -31,7 +31,7 @@ public class UserController {
     }
 
     @PatchMapping("/update/password")
-    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request, Principal connectedUser){
-        return ResponseEntity.ok().body(this.service.changePassword(request,connectedUser));
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request, Principal connectedUser) {
+        return ResponseEntity.ok().body(service.changePassword(request, connectedUser));
     }
 }

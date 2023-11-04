@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LogoutHandlerServiceImp implements LogoutHandler {
     private final TokenRepository tokenRepository;
+
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         final String authHeader = request.getHeader("Authorization");
@@ -22,7 +23,7 @@ public class LogoutHandlerServiceImp implements LogoutHandler {
         jwt = authHeader.substring(7);
         var storedToken = tokenRepository.findByToken(jwt)
                 .orElse(null);
-        if(storedToken != null){
+        if (storedToken != null) {
             storedToken.setExpired(true);
             storedToken.setRevoked(true);
             tokenRepository.save(storedToken);
