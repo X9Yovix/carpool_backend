@@ -1,5 +1,6 @@
 package com.tekup.carpool_backend.service.auth;
 
+import com.tekup.carpool_backend.exception.ResourceNotFoundException;
 import com.tekup.carpool_backend.repository.token.TokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,7 +23,7 @@ public class LogoutHandlerServiceImp implements LogoutHandler {
         }
         jwt = authHeader.substring(7);
         var storedToken = tokenRepository.findByToken(jwt)
-                .orElse(null);
+                .orElseThrow(ResourceNotFoundException::new);
         if (storedToken != null) {
             storedToken.setExpired(true);
             storedToken.setRevoked(true);
