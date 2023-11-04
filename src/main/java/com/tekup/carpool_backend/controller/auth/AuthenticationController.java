@@ -2,15 +2,13 @@ package com.tekup.carpool_backend.controller.auth;
 
 import com.tekup.carpool_backend.payload.request.LoginRequest;
 import com.tekup.carpool_backend.payload.request.RegisterRequest;
+import com.tekup.carpool_backend.payload.request.VerifyAccountRequest;
 import com.tekup.carpool_backend.payload.response.LoginResponse;
-import com.tekup.carpool_backend.payload.response.RegisterResponse;
+import com.tekup.carpool_backend.payload.response.MessageResponse;
 import com.tekup.carpool_backend.service.auth.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -20,7 +18,7 @@ public class AuthenticationController {
     private final AuthenticationService service;
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<MessageResponse> register(@RequestBody RegisterRequest request) {
         return ResponseEntity.ok(service.register(request));
     }
 
@@ -29,4 +27,8 @@ public class AuthenticationController {
         return ResponseEntity.ok(service.login(request));
     }
 
+    @PutMapping("/verify-account")
+    public ResponseEntity<MessageResponse> verifyAccount(@RequestBody VerifyAccountRequest request) {
+        return ResponseEntity.ok(service.verifyAccount(request));
+    }
 }

@@ -3,11 +3,14 @@ package com.tekup.carpool_backend.service.auth;
 
 import com.tekup.carpool_backend.payload.request.LoginRequest;
 import com.tekup.carpool_backend.payload.request.RegisterRequest;
+import com.tekup.carpool_backend.payload.request.VerifyAccountRequest;
 import com.tekup.carpool_backend.payload.response.LoginResponse;
-import com.tekup.carpool_backend.payload.response.RegisterResponse;
+import com.tekup.carpool_backend.payload.response.MessageResponse;
 
 public interface AuthenticationService {
-    RegisterResponse register(RegisterRequest request);
+    MessageResponse register(RegisterRequest request);
 
     LoginResponse login(LoginRequest request);
+
+    MessageResponse verifyAccount(VerifyAccountRequest request);
 }

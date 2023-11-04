@@ -9,8 +9,9 @@ import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.model.user.UserRole;
 import com.tekup.carpool_backend.payload.request.LoginRequest;
 import com.tekup.carpool_backend.payload.request.RegisterRequest;
+import com.tekup.carpool_backend.payload.request.VerifyAccountRequest;
 import com.tekup.carpool_backend.payload.response.LoginResponse;
-import com.tekup.carpool_backend.payload.response.RegisterResponse;
+import com.tekup.carpool_backend.payload.response.MessageResponse;
 import com.tekup.carpool_backend.repository.token.TokenRepository;
 import com.tekup.carpool_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Service
@@ -32,7 +34,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
     private final Otp otpCmp;
     private final EmailSender emailSenderCmp;
 
-    public RegisterResponse register(RegisterRequest request) {
+    public MessageResponse register(RegisterRequest request) {
         String otpCode = otpCmp.generateOtp();
         User user = User.builder()
                 .firstName(request.getFirstName())
@@ -47,7 +49,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         User savedUser = userRepository.save(user);
 
         emailSenderCmp.sendOtpVerification(savedUser.getEmail(), otpCode);
-        return RegisterResponse.builder()
+        return MessageResponse.builder()
                 .message("Registration done, check your email to verify your account with the OTP code")
                 .build();
     }
@@ -91,5 +93,38 @@ public class AuthenticationServiceImp implements AuthenticationService {
             t.setExpired(true);
         });
         tokenRepository.saveAll(validUserTokens);
+    }
+
+    public MessageResponse verifyAccount(VerifyAccountRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow();
+        LocalDateTime otpGeneratedTime = user.getOtpGeneratedTime();
+        LocalDateTime currentTime = LocalDateTime.now();
+        long secondsDifference = Duration.between(otpGeneratedTime, currentTime).getSeconds();
+        boolean isNotExpired = secondsDifference < 60;
+
+        if (user.getOtp().equals(request.getOtp())) {
+            if (isNotExpired) {
+                if (!user.isVerified()) {
+                    user.setVerified(true);
+                    userRepository.save(user);
+                    return MessageResponse.builder()
+                            .message("Your OTP has been successfully verified. You now have access to the platform")
+                            .build();
+                } else {
+                    return MessageResponse.builder()
+                            .message("Your account is already verified. You have access to the platform")
+                            .build();
+                }
+            } else {
+                return MessageResponse.builder()
+                        .message("OTP Code expired. Please regenerate another OTP code")
+                        .build();
+            }
+        } else {
+            return MessageResponse.builder()
+                    .message("Invalid OTP code")
+                    .build();
+        }
     }
 }
