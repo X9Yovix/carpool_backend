@@ -8,6 +8,7 @@ import com.tekup.carpool_backend.model.token.TokenType;
 import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.model.user.UserRole;
 import com.tekup.carpool_backend.payload.request.LoginRequest;
+import com.tekup.carpool_backend.payload.request.RegenerateOtpRequest;
 import com.tekup.carpool_backend.payload.request.RegisterRequest;
 import com.tekup.carpool_backend.payload.request.VerifyAccountRequest;
 import com.tekup.carpool_backend.payload.response.LoginResponse;
@@ -124,6 +125,26 @@ public class AuthenticationServiceImp implements AuthenticationService {
         } else {
             return MessageResponse.builder()
                     .message("Invalid OTP code")
+                    .build();
+        }
+    }
+
+    public MessageResponse regenerateOtp(RegenerateOtpRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        if (!user.isVerified()) {
+            String otpCode = otpCmp.generateOtp();
+            user.setOtp(otpCode);
+            user.setOtpGeneratedTime(LocalDateTime.now());
+            userRepository.save(user);
+
+            emailSenderCmp.sendOtpVerification(request.getEmail(), otpCode);
+
+            return MessageResponse.builder()
+                    .message("A new OTP code has been generated and sent to your email")
+                    .build();
+        } else {
+            return MessageResponse.builder()
+                    .message("Your account is already verified. You have access to the platform")
                     .build();
         }
     }

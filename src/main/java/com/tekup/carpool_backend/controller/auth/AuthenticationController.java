@@ -1,6 +1,7 @@
 package com.tekup.carpool_backend.controller.auth;
 
 import com.tekup.carpool_backend.payload.request.LoginRequest;
+import com.tekup.carpool_backend.payload.request.RegenerateOtpRequest;
 import com.tekup.carpool_backend.payload.request.RegisterRequest;
 import com.tekup.carpool_backend.payload.request.VerifyAccountRequest;
 import com.tekup.carpool_backend.payload.response.LoginResponse;
@@ -30,5 +31,10 @@ public class AuthenticationController {
     @PutMapping("/verify-account")
     public ResponseEntity<MessageResponse> verifyAccount(@RequestBody VerifyAccountRequest request) {
         return ResponseEntity.ok(service.verifyAccount(request));
+    }
+
+    @PostMapping("/regenerate-otp")
+    public ResponseEntity<MessageResponse> regenerateOtp(@RequestBody RegenerateOtpRequest request) {
+        return ResponseEntity.ok(service.regenerateOtp(request));
     }
 }
