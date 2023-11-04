@@ -1,6 +1,7 @@
 package com.tekup.carpool_backend.service.auth;
 
 import com.tekup.carpool_backend.config.jwt.JwtService;
+import com.tekup.carpool_backend.exception.ResourceNotFoundException;
 import com.tekup.carpool_backend.mail.EmailSender;
 import com.tekup.carpool_backend.mail.Otp;
 import com.tekup.carpool_backend.model.token.Token;
@@ -73,7 +74,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
                         request.getPassword()
                 )
         );
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(ResourceNotFoundException::new);
         String jwtToken = jwtService.generateToken(user);
 
         revokeAllUserTokens(user);
@@ -81,6 +82,9 @@ public class AuthenticationServiceImp implements AuthenticationService {
 
         return LoginResponse.builder()
                 .token(jwtToken)
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .role(user.getRole())
                 .build();
     }
 
@@ -98,7 +102,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
 
     public MessageResponse verifyAccount(VerifyAccountRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow();
+                .orElseThrow(ResourceNotFoundException::new);
         LocalDateTime otpGeneratedTime = user.getOtpGeneratedTime();
         LocalDateTime currentTime = LocalDateTime.now();
         long secondsDifference = Duration.between(otpGeneratedTime, currentTime).getSeconds();
@@ -130,7 +134,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
     }
 
     public MessageResponse regenerateOtp(RegenerateOtpRequest request) {
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(ResourceNotFoundException::new);
         if (!user.isVerified()) {
             String otpCode = otpCmp.generateOtp();
             user.setOtp(otpCode);
