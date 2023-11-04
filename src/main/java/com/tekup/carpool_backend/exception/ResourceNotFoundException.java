@@ -1,4 +1,4 @@
 package com.tekup.carpool_backend.exception;
 
-public class ResourceNotFoundException {
+public class ResourceNotFoundException extends RuntimeException{
 }
