@@ -1,9 +1,6 @@
 package com.tekup.carpool_backend.controller.auth;
 
-import com.tekup.carpool_backend.payload.request.LoginRequest;
-import com.tekup.carpool_backend.payload.request.RegenerateOtpRequest;
-import com.tekup.carpool_backend.payload.request.RegisterRequest;
-import com.tekup.carpool_backend.payload.request.VerifyAccountRequest;
+import com.tekup.carpool_backend.payload.request.*;
 import com.tekup.carpool_backend.payload.response.LoginResponse;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
 import com.tekup.carpool_backend.service.auth.AuthenticationService;
@@ -36,5 +33,15 @@ public class AuthenticationController {
     @PostMapping("/regenerate-otp")
     public ResponseEntity<MessageResponse> regenerateOtp(@RequestBody RegenerateOtpRequest request) {
         return ResponseEntity.ok(service.regenerateOtp(request));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<MessageResponse> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        return ResponseEntity.ok(service.forgotPassword(request));
+    }
+
+    @PatchMapping("/reset-password/{token}")
+    public ResponseEntity<MessageResponse> resetPassword(@PathVariable String token, @RequestBody ResetPasswordRequest request) {
+        return ResponseEntity.ok(service.resetPassword(token, request));
     }
 }

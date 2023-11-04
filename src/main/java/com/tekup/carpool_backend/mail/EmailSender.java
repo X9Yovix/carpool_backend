@@ -34,4 +34,25 @@ public class EmailSender {
         }
 
     }
+
+    public void sendResetPassword(String email, String url) {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+
+        try {
+            mimeMessageHelper.setTo(email);
+            mimeMessageHelper.setFrom("noreply@tekup-project.tn");
+            mimeMessageHelper.setSubject("Reset Password");
+
+            Context context = new Context();
+            context.setVariable("resetPasswordUrl", url);
+            String htmlContent = templateEngine.process("forgotpassword", context);
+            mimeMessageHelper.setText(htmlContent, true);
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            System.out.println(e.getMessage());
+        }
+
+    }
+
 }

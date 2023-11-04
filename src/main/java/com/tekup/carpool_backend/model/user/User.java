@@ -1,6 +1,7 @@
 package com.tekup.carpool_backend.model.user;
 
 
+import com.tekup.carpool_backend.model.password.ResetPassword;
 import com.tekup.carpool_backend.model.token.Token;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -53,6 +54,9 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
+
+    @OneToOne(mappedBy = "user")
+    private ResetPassword resetPasswordToken;
 
     public User(Long id, String firstName, String lastName, String email, String password, UserRole role) {
         this.id = id;

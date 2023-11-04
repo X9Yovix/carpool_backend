@@ -4,19 +4,19 @@ import com.tekup.carpool_backend.config.jwt.JwtService;
 import com.tekup.carpool_backend.exception.ResourceNotFoundException;
 import com.tekup.carpool_backend.mail.EmailSender;
 import com.tekup.carpool_backend.mail.Otp;
+import com.tekup.carpool_backend.model.password.ResetPassword;
 import com.tekup.carpool_backend.model.token.Token;
 import com.tekup.carpool_backend.model.token.TokenType;
 import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.model.user.UserRole;
-import com.tekup.carpool_backend.payload.request.LoginRequest;
-import com.tekup.carpool_backend.payload.request.RegenerateOtpRequest;
-import com.tekup.carpool_backend.payload.request.RegisterRequest;
-import com.tekup.carpool_backend.payload.request.VerifyAccountRequest;
+import com.tekup.carpool_backend.payload.request.*;
 import com.tekup.carpool_backend.payload.response.LoginResponse;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
+import com.tekup.carpool_backend.repository.password.ResetPasswordRepository;
 import com.tekup.carpool_backend.repository.token.TokenRepository;
 import com.tekup.carpool_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +36,10 @@ public class AuthenticationServiceImp implements AuthenticationService {
     private final TokenRepository tokenRepository;
     private final Otp otpCmp;
     private final EmailSender emailSenderCmp;
+    private final ResetPasswordRepository resetPasswordRepository;
+
+    @Value("${carpool_app.frontend.url}")
+    private String frontUrl;
 
     public MessageResponse register(RegisterRequest request) {
         String otpCode = otpCmp.generateOtp();
@@ -74,17 +79,23 @@ public class AuthenticationServiceImp implements AuthenticationService {
                         request.getPassword()
                 )
         );
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(ResourceNotFoundException::new);
-        String jwtToken = jwtService.generateToken(user);
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow((ResourceNotFoundException::new));
+        if (user.isVerified()) {
+            String jwtToken = jwtService.generateToken(user);
 
-        revokeAllUserTokens(user);
-        saveUserToken(user, jwtToken);
+            revokeAllUserTokens(user);
+            saveUserToken(user, jwtToken);
 
+            return LoginResponse.builder()
+                    .token(jwtToken)
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
+                    .role(user.getRole())
+                    .message("Welcome to TEKUP-Carpool project")
+                    .build();
+        }
         return LoginResponse.builder()
-                .token(jwtToken)
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .role(user.getRole())
+                .message("Your account is not verified")
                 .build();
     }
 
@@ -151,5 +162,56 @@ public class AuthenticationServiceImp implements AuthenticationService {
                     .message("Your account is already verified. You have access to the platform")
                     .build();
         }
+    }
+
+    public MessageResponse forgotPassword(ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        String url = generateResetToken(user);
+        emailSenderCmp.sendResetPassword(request.getEmail(), url);
+        return MessageResponse.builder()
+                .message("Password reset instructions have been sent to your email")
+                .build();
+    }
+
+    //Token reset password is set to be valid for 30mns
+    public String generateResetToken(User user) {
+        UUID uuid = UUID.randomUUID();
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        LocalDateTime expirationDateTime = currentDateTime.plusMinutes(30);
+        ResetPassword resetToken = ResetPassword.builder()
+                .token(uuid.toString())
+                .expirationDate(expirationDateTime)
+                .user(user)
+                .build();
+
+        ResetPassword token = resetPasswordRepository.save(resetToken);
+        return frontUrl + "/reset-password/" + token.getToken();
+    }
+
+    public MessageResponse resetPassword(String token, ResetPasswordRequest request) {
+        if (request.getNewPassword().equals(request.getConfirmationPassword())) {
+            ResetPassword resetPassword = resetPasswordRepository.findByToken(token).orElseThrow();
+            if (isResetPasswordTokenValid(resetPassword.getExpirationDate())) {
+                User user = resetPassword.getUser();
+                user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+                userRepository.save(user);
+                return MessageResponse.builder()
+                        .message("Password has been changed")
+                        .build();
+            } else {
+                return MessageResponse.builder()
+                        .message("Something went wrong")
+                        .build();
+            }
+        } else {
+            return MessageResponse.builder()
+                    .message("New Password and Password Confirmation do not match")
+                    .build();
+        }
+    }
+
+    public boolean isResetPasswordTokenValid(LocalDateTime expirationDate) {
+        LocalDateTime currentDate = LocalDateTime.now();
+        return expirationDate.isAfter(currentDate);
     }
 }

@@ -11,8 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginResponse {
-    private String token;
-    private String lastName;
     private String firstName;
-    private UserRole role;
+    private String lastName;
+    private String token;
+    private String message;
+    private Enum<UserRole> role;
 }
