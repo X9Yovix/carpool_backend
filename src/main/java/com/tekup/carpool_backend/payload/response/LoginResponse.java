@@ -1,5 +1,6 @@
 package com.tekup.carpool_backend.payload.response;
 
+import com.tekup.carpool_backend.model.user.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,5 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginResponse {
+    private String firstName;
+    private String lastName;
     private String token;
+    private String message;
+    private Enum<UserRole> role;
 }

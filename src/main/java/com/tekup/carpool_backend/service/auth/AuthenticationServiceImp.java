@@ -74,13 +74,22 @@ public class AuthenticationServiceImp implements AuthenticationService {
                 )
         );
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-        String jwtToken = jwtService.generateToken(user);
+        if (user.isVerified()) {
+            String jwtToken = jwtService.generateToken(user);
 
-        revokeAllUserTokens(user);
-        saveUserToken(user, jwtToken);
+            revokeAllUserTokens(user);
+            saveUserToken(user, jwtToken);
 
+            return LoginResponse.builder()
+                    .token(jwtToken)
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
+                    .role(user.getRole())
+                    .message("Welcome to TEKUP-Carpool project")
+                    .build();
+        }
         return LoginResponse.builder()
-                .token(jwtToken)
+                .message("Your account is not verified")
                 .build();
     }
 
