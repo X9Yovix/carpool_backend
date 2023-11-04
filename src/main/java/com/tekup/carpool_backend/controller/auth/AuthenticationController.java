@@ -39,4 +39,9 @@ public class AuthenticationController {
     public ResponseEntity<MessageResponse> forgotPassword(@RequestBody ForgotPasswordRequest request) {
         return ResponseEntity.ok(service.forgotPassword(request));
     }
+
+    @PatchMapping("/reset-password/{token}")
+    public ResponseEntity<MessageResponse> resetPassword(@PathVariable String token, @RequestBody ResetPasswordRequest request) {
+        return ResponseEntity.ok(service.resetPassword(token, request));
+    }
 }

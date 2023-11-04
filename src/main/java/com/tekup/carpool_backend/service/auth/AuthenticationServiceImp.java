@@ -172,6 +172,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
                 .build();
     }
 
+    //Token reset password is set to be valid for 30mns
     public String generateResetToken(User user) {
         UUID uuid = UUID.randomUUID();
         LocalDateTime currentDateTime = LocalDateTime.now();
@@ -184,5 +185,32 @@ public class AuthenticationServiceImp implements AuthenticationService {
 
         ResetPassword token = resetPasswordRepository.save(resetToken);
         return frontUrl + "/reset-password/" + token.getToken();
+    }
+
+    public MessageResponse resetPassword(String token, ResetPasswordRequest request) {
+        if (request.getNewPassword().equals(request.getConfirmationPassword())) {
+            ResetPassword resetPassword = resetPasswordRepository.findByToken(token).orElseThrow();
+            if (isResetPasswordTokenValid(resetPassword.getExpirationDate())) {
+                User user = resetPassword.getUser();
+                user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+                userRepository.save(user);
+                return MessageResponse.builder()
+                        .message("Password has been changed")
+                        .build();
+            } else {
+                return MessageResponse.builder()
+                        .message("Something went wrong")
+                        .build();
+            }
+        } else {
+            return MessageResponse.builder()
+                    .message("New Password and Password Confirmation do not match")
+                    .build();
+        }
+    }
+
+    public boolean isResetPasswordTokenValid(LocalDateTime expirationDate) {
+        LocalDateTime currentDate = LocalDateTime.now();
+        return expirationDate.isAfter(currentDate);
     }
 }

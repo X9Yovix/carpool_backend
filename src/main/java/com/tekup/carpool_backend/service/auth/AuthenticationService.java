@@ -11,7 +11,10 @@ public interface AuthenticationService {
     LoginResponse login(LoginRequest request);
 
     MessageResponse verifyAccount(VerifyAccountRequest request);
+
     MessageResponse regenerateOtp(RegenerateOtpRequest request);
 
     MessageResponse forgotPassword(ForgotPasswordRequest request);
+
+    MessageResponse resetPassword(String token, ResetPasswordRequest request);
 }
