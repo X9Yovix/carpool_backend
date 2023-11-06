@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+
 @Service
 public class JwtService {
     @Value("${carpool_app.security.jwt.secret}")
@@ -46,11 +47,9 @@ public class JwtService {
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-        extraClaims.put("ROLE",
-                userDetails.getAuthorities().stream()
+        extraClaims.put("ROLES",userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(",")));
-        //ADD ROLES IN JWT
         return Jwts
                 .builder()
                 .claims(extraClaims)
