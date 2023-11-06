@@ -90,7 +90,6 @@ public class AuthenticationServiceImp implements AuthenticationService {
                     .token(jwtToken)
                     .firstName(user.getFirstName())
                     .lastName(user.getLastName())
-                    .role(user.getRole())
                     .message("Welcome to TEKUP-Carpool project")
                     .build();
         }
