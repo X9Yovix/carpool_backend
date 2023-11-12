@@ -1,7 +1,6 @@
 package com.tekup.carpool_backend.controller.auth;
 
 import com.tekup.carpool_backend.payload.request.*;
-import com.tekup.carpool_backend.payload.response.LoginResponse;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
 import com.tekup.carpool_backend.service.auth.AuthenticationService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<Object> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(service.login(request));
     }
 

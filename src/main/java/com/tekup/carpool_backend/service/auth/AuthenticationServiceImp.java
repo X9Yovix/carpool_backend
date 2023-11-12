@@ -19,6 +19,7 @@ import com.tekup.carpool_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -86,30 +87,36 @@ public class AuthenticationServiceImp implements AuthenticationService {
         tokenRepository.save(token);
     }
 
-    public LoginResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
-        User user = userRepository.findByEmailWithRoles(request.getEmail()).orElseThrow((ResourceNotFoundException::new));
-        if (user.isVerified()) {
-            String jwtToken = jwtService.generateToken(user);
+    public Object login(LoginRequest request) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+            User user = userRepository.findByEmailWithRoles(request.getEmail()).orElseThrow((ResourceNotFoundException::new));
+            if (user.isVerified()) {
+                String jwtToken = jwtService.generateToken(user);
 
-            revokeAllUserTokens(user);
-            saveUserToken(user, jwtToken);
+                revokeAllUserTokens(user);
+                saveUserToken(user, jwtToken);
 
-            return LoginResponse.builder()
-                    .token(jwtToken)
-                    .firstName(user.getFirstName())
-                    .lastName(user.getLastName())
-                    .message("Welcome to TEKUP-Carpool project")
+                return LoginResponse.builder()
+                        .token(jwtToken)
+                        .firstName(user.getFirstName())
+                        .lastName(user.getLastName())
+                        .message("Welcome to TEKUP-Carpool project")
+                        .build();
+            }
+            return MessageResponse.builder()
+                    .message("Your account is not verified")
+                    .build();
+        } catch (BadCredentialsException e) {
+            return MessageResponse.builder()
+                    .message("Invalid email or password. Please try again")
                     .build();
         }
-        return LoginResponse.builder()
-                .message("Your account is not verified")
-                .build();
     }
 
     private void revokeAllUserTokens(User user) {

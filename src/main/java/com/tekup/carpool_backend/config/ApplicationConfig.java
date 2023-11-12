@@ -1,6 +1,5 @@
 package com.tekup.carpool_backend.config;
 
-import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

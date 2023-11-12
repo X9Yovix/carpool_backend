@@ -1,13 +1,13 @@
 package com.tekup.carpool_backend.payload.request;
 
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+@Builder
 @Getter
 @Setter
-@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ChangePasswordRequest {
     private String currentPassword;
     private String newPassword;

@@ -8,7 +8,7 @@ import com.tekup.carpool_backend.payload.response.MessageResponse;
 public interface AuthenticationService {
     MessageResponse register(RegisterRequest request);
 
-    LoginResponse login(LoginRequest request);
+    Object login(LoginRequest request);
 
     MessageResponse verifyAccount(VerifyAccountRequest request);
 
