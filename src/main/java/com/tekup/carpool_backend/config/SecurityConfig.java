@@ -2,7 +2,6 @@ package com.tekup.carpool_backend.config;
 
 
 import com.tekup.carpool_backend.config.jwt.JwtAuthFilter;
-import com.tekup.carpool_backend.model.user.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,7 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(WHITE_LIST_URI)
                         .permitAll()
-                        .requestMatchers("/users/admin").hasAuthority(UserRole.ADMIN.name())
+                        .requestMatchers("/users/admin").hasAuthority("ADMIN")
                         .anyRequest()
                         .authenticated()
                 )

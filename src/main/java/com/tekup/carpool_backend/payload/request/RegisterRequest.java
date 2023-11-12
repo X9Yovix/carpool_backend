@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -14,5 +17,5 @@ public class RegisterRequest {
     private String lastName;
     private String email;
     private String password;
-    private String role;
+    private Set<String> roles = new HashSet<>();
 }

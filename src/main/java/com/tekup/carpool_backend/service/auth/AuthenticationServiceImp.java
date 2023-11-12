@@ -7,13 +7,14 @@ import com.tekup.carpool_backend.mail.Otp;
 import com.tekup.carpool_backend.model.password.ResetPassword;
 import com.tekup.carpool_backend.model.token.Token;
 import com.tekup.carpool_backend.model.token.TokenType;
+import com.tekup.carpool_backend.model.user.Role;
 import com.tekup.carpool_backend.model.user.User;
-import com.tekup.carpool_backend.model.user.UserRole;
 import com.tekup.carpool_backend.payload.request.*;
 import com.tekup.carpool_backend.payload.response.LoginResponse;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
 import com.tekup.carpool_backend.repository.password.ResetPasswordRepository;
 import com.tekup.carpool_backend.repository.token.TokenRepository;
+import com.tekup.carpool_backend.repository.user.RoleRepository;
 import com.tekup.carpool_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +25,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,22 +40,33 @@ public class AuthenticationServiceImp implements AuthenticationService {
     private final Otp otpCmp;
     private final EmailSender emailSenderCmp;
     private final ResetPasswordRepository resetPasswordRepository;
-
+    private final RoleRepository roleRepository;
     @Value("${carpool_app.frontend.url}")
     private String frontUrl;
 
     public MessageResponse register(RegisterRequest request) {
+
+        Set<Role> roles = request.getRoles().stream()
+                .map(roleName -> roleRepository.findByName(roleName).orElseThrow())
+                .collect(Collectors.toSet());
+
+        if (roles.isEmpty()) {
+            return MessageResponse.builder()
+                    .message("Invalid roles provided")
+                    .build();
+        }
+
         String otpCode = otpCmp.generateOtp();
+
         User user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(UserRole.valueOf(request.getRole()))
+                .roles(roles)
                 .otp(otpCode)
                 .otpGeneratedTime(LocalDateTime.now())
                 .build();
-
         User savedUser = userRepository.save(user);
 
         emailSenderCmp.sendOtpVerification(savedUser.getEmail(), otpCode);
@@ -79,7 +93,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
                         request.getPassword()
                 )
         );
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow((ResourceNotFoundException::new));
+        User user = userRepository.findByEmailWithRoles(request.getEmail()).orElseThrow((ResourceNotFoundException::new));
         if (user.isVerified()) {
             String jwtToken = jwtService.generateToken(user);
 

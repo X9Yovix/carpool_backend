@@ -1,5 +1,6 @@
 package com.tekup.carpool_backend.config;
 
+import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -25,7 +26,7 @@ public class ApplicationConfig {
         return new UserDetailsService() {
             @Override
             public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                return userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+                return userRepository.findByEmailWithRoles(username).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
             }
         };
     }
