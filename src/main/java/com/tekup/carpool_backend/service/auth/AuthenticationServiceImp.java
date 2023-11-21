@@ -50,7 +50,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         Set<Role> roles = request.getRoles().stream()
                 .map(
                         roleName -> roleRepository.findByName(roleName).orElseThrow(
-                        () -> new ResourceNotFoundException("Role not found for name: " + roleName)
+                                () -> new ResourceNotFoundException("Role not found for name: " + roleName)
                         )
                 )
                 .collect(Collectors.toSet());
@@ -233,30 +233,30 @@ public class AuthenticationServiceImp implements AuthenticationService {
     }
 
     public MessageResponse resetPassword(String token, ResetPasswordRequest request) {
-        if (request.getNewPassword().equals(request.getConfirmationPassword())) {
-            ResetPassword resetPassword = resetPasswordRepository.findByToken(token).orElseThrow(
-                    () -> new ResourceNotFoundException("Token not found for token: " + token)
-            );
-            if (isResetPasswordTokenValid(resetPassword.getExpirationDate())) {
-                User user = resetPassword.getUser();
-                user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-                userRepository.save(user);
-                return MessageResponse.builder()
-                        .message("Password has been changed")
-                        .http_code(200)
-                        .build();
-            } else {
-                return MessageResponse.builder()
-                        .message("Something went wrong")
-                        .http_code(401)
-                        .build();
-            }
+        //if (request.getNewPassword().equals(request.getConfirmationPassword())) {
+        ResetPassword resetPassword = resetPasswordRepository.findByToken(token).orElseThrow(
+                () -> new ResourceNotFoundException("Token not found for token: " + token)
+        );
+        if (isResetPasswordTokenValid(resetPassword.getExpirationDate())) {
+            User user = resetPassword.getUser();
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+            return MessageResponse.builder()
+                    .message("Password has been changed")
+                    .http_code(200)
+                    .build();
         } else {
             return MessageResponse.builder()
-                    .message("New Password and Password Confirmation do not match")
+                    .message("Something went wrong")
                     .http_code(401)
                     .build();
         }
+        //} else {
+        //    return MessageResponse.builder()
+        //            .message("New Password and Password Confirmation do not match")
+        //            .http_code(401)
+        //            .build();
+        //}
     }
 
     public boolean isResetPasswordTokenValid(LocalDateTime expirationDate) {
