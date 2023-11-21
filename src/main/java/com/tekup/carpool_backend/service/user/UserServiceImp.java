@@ -3,6 +3,7 @@ package com.tekup.carpool_backend.service.user;
 import com.tekup.carpool_backend.model.user.Role;
 import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.payload.request.ChangePasswordRequest;
+import com.tekup.carpool_backend.payload.response.MessageResponse;
 import com.tekup.carpool_backend.repository.user.RoleRepository;
 import com.tekup.carpool_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -42,16 +43,25 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public String changePassword(ChangePasswordRequest request, Principal connectedUser) {
+    public MessageResponse changePassword(ChangePasswordRequest request, Principal connectedUser) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            return "Wrong password";
+            return MessageResponse.builder()
+                    .message("Current password is wrong")
+                    .http_code(401)
+                    .build();
         }
         if (!request.getNewPassword().equals(request.getConfirmationPassword())) {
-            return "NewPassword & ConfirmationPassword are not the same";
+            return MessageResponse.builder()
+                    .message("New Password & Password Confirmation are not the same")
+                    .http_code(401)
+                    .build();
         }
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
-        return "Password updated";
+        return MessageResponse.builder()
+                .message("Password updated successfully")
+                .http_code(200)
+                .build();
     }
 }

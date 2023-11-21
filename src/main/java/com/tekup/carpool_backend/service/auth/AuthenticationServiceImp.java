@@ -54,6 +54,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         if (roles.isEmpty()) {
             return MessageResponse.builder()
                     .message("Invalid roles provided")
+                    .http_code(401)
                     .build();
         }
 
@@ -73,6 +74,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         emailSenderCmp.sendOtpVerification(savedUser.getEmail(), otpCode);
         return MessageResponse.builder()
                 .message("Registration done, check your email to verify your account with the OTP code")
+                .http_code(200)
                 .build();
     }
 
@@ -107,14 +109,17 @@ public class AuthenticationServiceImp implements AuthenticationService {
                         .firstName(user.getFirstName())
                         .lastName(user.getLastName())
                         .message("Welcome to TEKUP-Carpool project")
+                        .http_code(200)
                         .build();
             }
             return MessageResponse.builder()
                     .message("Your account is not verified")
+                    .http_code(401)
                     .build();
         } catch (BadCredentialsException e) {
             return MessageResponse.builder()
                     .message("Invalid email or password. Please try again")
+                    .http_code(401)
                     .build();
         }
     }
@@ -146,20 +151,24 @@ public class AuthenticationServiceImp implements AuthenticationService {
                     userRepository.save(user);
                     return MessageResponse.builder()
                             .message("Your OTP has been successfully verified. You now have access to the platform")
+                            .http_code(200)
                             .build();
                 } else {
                     return MessageResponse.builder()
                             .message("Your account is already verified. You have access to the platform")
+                            .http_code(401)
                             .build();
                 }
             } else {
                 return MessageResponse.builder()
                         .message("OTP Code expired. Please regenerate another OTP code")
+                        .http_code(401)
                         .build();
             }
         } else {
             return MessageResponse.builder()
                     .message("Invalid OTP code")
+                    .http_code(401)
                     .build();
         }
     }
@@ -176,10 +185,12 @@ public class AuthenticationServiceImp implements AuthenticationService {
 
             return MessageResponse.builder()
                     .message("A new OTP code has been generated and sent to your email")
+                    .http_code(200)
                     .build();
         } else {
             return MessageResponse.builder()
                     .message("Your account is already verified. You have access to the platform")
+                    .http_code(401)
                     .build();
         }
     }
@@ -190,6 +201,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         emailSenderCmp.sendResetPassword(request.getEmail(), url);
         return MessageResponse.builder()
                 .message("Password reset instructions have been sent to your email")
+                .http_code(200)
                 .build();
     }
 
@@ -217,15 +229,18 @@ public class AuthenticationServiceImp implements AuthenticationService {
                 userRepository.save(user);
                 return MessageResponse.builder()
                         .message("Password has been changed")
+                        .http_code(200)
                         .build();
             } else {
                 return MessageResponse.builder()
                         .message("Something went wrong")
+                        .http_code(401)
                         .build();
             }
         } else {
             return MessageResponse.builder()
                     .message("New Password and Password Confirmation do not match")
+                    .http_code(401)
                     .build();
         }
     }

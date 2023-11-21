@@ -12,4 +12,5 @@ public class LoginResponse {
     private String lastName;
     private String token;
     private String message;
+    private int http_code;
 }
