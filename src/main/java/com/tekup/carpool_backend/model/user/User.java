@@ -57,8 +57,8 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
 
-    @OneToOne(mappedBy = "user")
-    private ResetPassword resetPasswordToken;
+    @OneToMany(mappedBy = "user")
+    private List<ResetPassword> resetPasswords;
 
     public User(Long id, String firstName, String lastName, String email, String password, Set<Role> roles, boolean verified) {
         this.id = id;

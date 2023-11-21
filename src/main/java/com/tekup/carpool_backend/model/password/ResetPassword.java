@@ -25,7 +25,7 @@ public class ResetPassword {
     @Column(name = "expiration_date", nullable = false)
     private LocalDateTime expirationDate;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
