@@ -6,13 +6,11 @@ import com.tekup.carpool_backend.service.auth.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-
 public class AuthenticationController {
 
     private final AuthenticationService service;
@@ -28,7 +26,7 @@ public class AuthenticationController {
     }
 
     @PutMapping("/verify-account")
-    public ResponseEntity<?> verifyAccount(@RequestBody VerifyAccountRequest request) {
+    public ResponseEntity<?> verifyAccount(@Valid @RequestBody VerifyAccountRequest request) {
         return ResponseEntity.ok(service.verifyAccount(request));
     }
 

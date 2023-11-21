@@ -9,6 +9,7 @@ import com.tekup.carpool_backend.repository.user.RoleRepository;
 import com.tekup.carpool_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -55,20 +56,14 @@ public class UserServiceImp implements UserService {
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             return MessageResponse.builder()
                     .message("Current password is wrong")
-                    .http_code(401)
-                    .build();
-        }
-        if (!request.getNewPassword().equals(request.getConfirmationPassword())) {
-            return MessageResponse.builder()
-                    .message("New Password & Password Confirmation are not the same")
-                    .http_code(401)
+                    .http_code(HttpStatus.UNAUTHORIZED.value())
                     .build();
         }
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
         return MessageResponse.builder()
                 .message("Password updated successfully")
-                .http_code(200)
+                .http_code(HttpStatus.OK.value())
                 .build();
     }
 }
