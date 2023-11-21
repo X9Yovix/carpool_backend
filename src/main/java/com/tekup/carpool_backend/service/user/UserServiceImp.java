@@ -1,5 +1,6 @@
 package com.tekup.carpool_backend.service.user;
 
+import com.tekup.carpool_backend.exception.ResourceNotFoundException;
 import com.tekup.carpool_backend.model.user.Role;
 import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.payload.request.ChangePasswordRequest;
@@ -31,9 +32,15 @@ public class UserServiceImp implements UserService {
 
     public boolean seedInitialUsers() {
         seedRoles();
-        Role adminRole = roleRepository.findByName("ADMIN").orElseThrow();
-        Role driverRole = roleRepository.findByName("DRIVER").orElseThrow();
-        Role passengerRole = roleRepository.findByName("PASSENGER").orElseThrow();
+        Role adminRole = roleRepository.findByName("ADMIN").orElseThrow(
+                () -> new ResourceNotFoundException("Role not found for name: ADMIN")
+        );
+        Role driverRole = roleRepository.findByName("DRIVER").orElseThrow(
+                () -> new ResourceNotFoundException("Role not found for name: DRIVER")
+        );
+        Role passengerRole = roleRepository.findByName("PASSENGER").orElseThrow(
+                () -> new ResourceNotFoundException("Role not found for name: PASSENGER")
+        );
         User admin1 = new User(1L, "Ali", "Ben Ali", "ali@gmail.com", BCrypt.hashpw("alipassword", BCrypt.gensalt()), Collections.singleton(adminRole), true);
         User driver1 = new User(2L, "Saleh", "Ben Saleh", "saleh@gmail.com", BCrypt.hashpw("salehpassword", BCrypt.gensalt()), Collections.singleton(driverRole), true);
         User passenger1 = new User(3L, "Mohamed", "Ben Mohamed", "mohamed@gmail.com", BCrypt.hashpw("mohamedpassword", BCrypt.gensalt()), new HashSet<>(Arrays.asList(driverRole, passengerRole)), true);

@@ -55,7 +55,7 @@ public class SecurityConfig {
                                     response.setStatus(HttpServletResponse.SC_OK);
 
                                     ObjectMapper objectMapper = new ObjectMapper();
-                                    String jsonResponse = objectMapper.writeValueAsString(new MessageResponse("Logout successfully"));
+                                    String jsonResponse = objectMapper.writeValueAsString(new MessageResponse("Logout successfully",200));
 
                                     response.setContentType("application/json");
                                     response.getWriter().write(jsonResponse);

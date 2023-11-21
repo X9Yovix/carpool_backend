@@ -48,7 +48,11 @@ public class AuthenticationServiceImp implements AuthenticationService {
     public MessageResponse register(RegisterRequest request) {
 
         Set<Role> roles = request.getRoles().stream()
-                .map(roleName -> roleRepository.findByName(roleName).orElseThrow())
+                .map(
+                        roleName -> roleRepository.findByName(roleName).orElseThrow(
+                        () -> new ResourceNotFoundException("Role not found for name: " + roleName)
+                        )
+                )
                 .collect(Collectors.toSet());
 
         if (roles.isEmpty()) {
@@ -97,7 +101,9 @@ public class AuthenticationServiceImp implements AuthenticationService {
                             request.getPassword()
                     )
             );
-            User user = userRepository.findByEmailWithRoles(request.getEmail()).orElseThrow((ResourceNotFoundException::new));
+            User user = userRepository.findByEmailWithRoles(request.getEmail()).orElseThrow(
+                    () -> new ResourceNotFoundException("User not found for email: " + request.getEmail())
+            );
             if (user.isVerified()) {
                 String jwtToken = jwtService.generateToken(user);
 
@@ -138,7 +144,9 @@ public class AuthenticationServiceImp implements AuthenticationService {
 
     public MessageResponse verifyAccount(VerifyAccountRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(ResourceNotFoundException::new);
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("User not found for email: " + request.getEmail())
+                );
         LocalDateTime otpGeneratedTime = user.getOtpGeneratedTime();
         LocalDateTime currentTime = LocalDateTime.now();
         long secondsDifference = Duration.between(otpGeneratedTime, currentTime).getSeconds();
@@ -174,7 +182,9 @@ public class AuthenticationServiceImp implements AuthenticationService {
     }
 
     public MessageResponse regenerateOtp(RegenerateOtpRequest request) {
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(ResourceNotFoundException::new);
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
+                () -> new ResourceNotFoundException("User not found for email: " + request.getEmail())
+        );
         if (!user.isVerified()) {
             String otpCode = otpCmp.generateOtp();
             user.setOtp(otpCode);
@@ -196,7 +206,9 @@ public class AuthenticationServiceImp implements AuthenticationService {
     }
 
     public MessageResponse forgotPassword(ForgotPasswordRequest request) {
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
+                () -> new ResourceNotFoundException("User not found for email: " + request.getEmail())
+        );
         String url = generateResetToken(user);
         emailSenderCmp.sendResetPassword(request.getEmail(), url);
         return MessageResponse.builder()
@@ -222,7 +234,9 @@ public class AuthenticationServiceImp implements AuthenticationService {
 
     public MessageResponse resetPassword(String token, ResetPasswordRequest request) {
         if (request.getNewPassword().equals(request.getConfirmationPassword())) {
-            ResetPassword resetPassword = resetPasswordRepository.findByToken(token).orElseThrow();
+            ResetPassword resetPassword = resetPasswordRepository.findByToken(token).orElseThrow(
+                    () -> new ResourceNotFoundException("Token not found for token: " + token)
+            );
             if (isResetPasswordTokenValid(resetPassword.getExpirationDate())) {
                 User user = resetPassword.getUser();
                 user.setPassword(passwordEncoder.encode(request.getNewPassword()));
