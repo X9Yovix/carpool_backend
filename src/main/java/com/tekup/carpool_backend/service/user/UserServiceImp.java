@@ -4,6 +4,7 @@ import com.tekup.carpool_backend.exception.ResourceNotFoundException;
 import com.tekup.carpool_backend.model.user.Role;
 import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.payload.request.ChangePasswordRequest;
+import com.tekup.carpool_backend.payload.response.ErrorResponse;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
 import com.tekup.carpool_backend.repository.user.RoleRepository;
 import com.tekup.carpool_backend.repository.user.UserRepository;
@@ -51,11 +52,11 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public MessageResponse changePassword(ChangePasswordRequest request, Principal connectedUser) {
+    public Object changePassword(ChangePasswordRequest request, Principal connectedUser) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            return MessageResponse.builder()
-                    .message("Current password is wrong")
+            return ErrorResponse.builder()
+                    .errors(List.of("Current password is wrong"))
                     .http_code(HttpStatus.UNAUTHORIZED.value())
                     .build();
         }

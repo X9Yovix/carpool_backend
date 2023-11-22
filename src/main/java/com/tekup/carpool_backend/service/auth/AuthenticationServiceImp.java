@@ -10,6 +10,7 @@ import com.tekup.carpool_backend.model.token.TokenType;
 import com.tekup.carpool_backend.model.user.Role;
 import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.payload.request.*;
+import com.tekup.carpool_backend.payload.response.ErrorResponse;
 import com.tekup.carpool_backend.payload.response.LoginResponse;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
 import com.tekup.carpool_backend.repository.password.ResetPasswordRepository;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -46,7 +48,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
     @Value("${carpool_app.frontend.url}")
     private String frontUrl;
 
-    public MessageResponse register(RegisterRequest request) {
+    public Object register(RegisterRequest request) {
 
         Set<Role> roles = request.getRoles().stream()
                 .map(
@@ -57,8 +59,8 @@ public class AuthenticationServiceImp implements AuthenticationService {
                 .collect(Collectors.toSet());
 
         if (roles.isEmpty()) {
-            return MessageResponse.builder()
-                    .message("Invalid roles provided")
+            return ErrorResponse.builder()
+                    .errors(List.of("Invalid roles provided"))
                     .http_code(HttpStatus.UNAUTHORIZED.value())
                     .build();
         }
@@ -119,13 +121,13 @@ public class AuthenticationServiceImp implements AuthenticationService {
                         .http_code(HttpStatus.OK.value())
                         .build();
             }
-            return MessageResponse.builder()
-                    .message("Your account is not verified")
+            return ErrorResponse.builder()
+                    .errors(List.of("Your account is not verified"))
                     .http_code(HttpStatus.UNAUTHORIZED.value())
                     .build();
         } catch (BadCredentialsException e) {
-            return MessageResponse.builder()
-                    .message("Invalid email or password. Please try again")
+            return ErrorResponse.builder()
+                    .errors(List.of("Invalid email or password. Please try again"))
                     .http_code(HttpStatus.UNAUTHORIZED.value())
                     .build();
         }
@@ -143,7 +145,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         tokenRepository.saveAll(validUserTokens);
     }
 
-    public MessageResponse verifyAccount(VerifyAccountRequest request) {
+    public Object verifyAccount(VerifyAccountRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(
                         () -> new ResourceNotFoundException("User not found for email: " + request.getEmail())
@@ -163,26 +165,26 @@ public class AuthenticationServiceImp implements AuthenticationService {
                             .http_code(HttpStatus.OK.value())
                             .build();
                 } else {
-                    return MessageResponse.builder()
-                            .message("Your account is already verified. You have access to the platform")
+                    return ErrorResponse.builder()
+                            .errors(List.of("Your account is already verified. You have access to the platform"))
                             .http_code(HttpStatus.UNAUTHORIZED.value())
                             .build();
                 }
             } else {
-                return MessageResponse.builder()
-                        .message("OTP Code expired. Please regenerate another OTP code")
+                return ErrorResponse.builder()
+                        .errors(List.of("OTP Code expired. Please regenerate another OTP code"))
                         .http_code(HttpStatus.UNAUTHORIZED.value())
                         .build();
             }
         } else {
-            return MessageResponse.builder()
-                    .message("Invalid OTP code")
+            return ErrorResponse.builder()
+                    .errors(List.of("Invalid OTP code"))
                     .http_code(HttpStatus.UNAUTHORIZED.value())
                     .build();
         }
     }
 
-    public MessageResponse regenerateOtp(RegenerateOtpRequest request) {
+    public Object regenerateOtp(RegenerateOtpRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
                 () -> new ResourceNotFoundException("User not found for email: " + request.getEmail())
         );
@@ -199,8 +201,8 @@ public class AuthenticationServiceImp implements AuthenticationService {
                     .http_code(HttpStatus.OK.value())
                     .build();
         } else {
-            return MessageResponse.builder()
-                    .message("Your account is already verified. You have access to the platform")
+            return ErrorResponse.builder()
+                    .errors(List.of("Your account is already verified. You have access to the platform"))
                     .http_code(HttpStatus.UNAUTHORIZED.value())
                     .build();
         }
@@ -233,8 +235,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         return frontUrl + "/reset-password/" + token.getToken();
     }
 
-    public MessageResponse resetPassword(String token, ResetPasswordRequest request) {
-        //if (request.getNewPassword().equals(request.getConfirmationPassword())) {
+    public Object resetPassword(String token, ResetPasswordRequest request) {
         ResetPassword resetPassword = resetPasswordRepository.findByToken(token).orElseThrow(
                 () -> new ResourceNotFoundException("Token not found for token: " + token)
         );
@@ -247,17 +248,11 @@ public class AuthenticationServiceImp implements AuthenticationService {
                     .http_code(HttpStatus.OK.value())
                     .build();
         } else {
-            return MessageResponse.builder()
-                    .message("Something went wrong")
+            return ErrorResponse.builder()
+                    .errors(List.of("Something went wrong"))
                     .http_code(HttpStatus.UNAUTHORIZED.value())
                     .build();
         }
-        //} else {
-        //    return MessageResponse.builder()
-        //            .message("New Password and Password Confirmation do not match")
-        //            .http_code(HttpStatus.UNAUTHORIZED.value())
-        //            .build();
-        //}
     }
 
     public boolean isResetPasswordTokenValid(LocalDateTime expirationDate) {

@@ -1,7 +1,6 @@
 package com.tekup.carpool_backend.controller.auth;
 
 import com.tekup.carpool_backend.payload.request.*;
-import com.tekup.carpool_backend.payload.response.MessageResponse;
 import com.tekup.carpool_backend.service.auth.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,7 @@ public class AuthenticationController {
     private final AuthenticationService service;
 
     @PostMapping("/register")
-    public ResponseEntity<MessageResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<Object> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(service.register(request));
     }
 
@@ -26,22 +25,22 @@ public class AuthenticationController {
     }
 
     @PutMapping("/verify-account")
-    public ResponseEntity<?> verifyAccount(@Valid @RequestBody VerifyAccountRequest request) {
+    public ResponseEntity<Object> verifyAccount(@Valid @RequestBody VerifyAccountRequest request) {
         return ResponseEntity.ok(service.verifyAccount(request));
     }
 
     @PostMapping("/regenerate-otp")
-    public ResponseEntity<MessageResponse> regenerateOtp(@Valid @RequestBody RegenerateOtpRequest request) {
+    public ResponseEntity<Object> regenerateOtp(@Valid @RequestBody RegenerateOtpRequest request) {
         return ResponseEntity.ok(service.regenerateOtp(request));
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<Object> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         return ResponseEntity.ok(service.forgotPassword(request));
     }
 
     @PatchMapping("/reset-password/{token}")
-    public ResponseEntity<MessageResponse> resetPassword(@PathVariable String token, @Valid @RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<Object> resetPassword(@PathVariable String token, @Valid @RequestBody ResetPasswordRequest request) {
         return ResponseEntity.ok(service.resetPassword(token, request));
     }
 }
