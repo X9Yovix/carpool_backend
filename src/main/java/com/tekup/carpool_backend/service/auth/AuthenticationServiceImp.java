@@ -7,24 +7,31 @@ import com.tekup.carpool_backend.mail.Otp;
 import com.tekup.carpool_backend.model.password.ResetPassword;
 import com.tekup.carpool_backend.model.token.Token;
 import com.tekup.carpool_backend.model.token.TokenType;
+import com.tekup.carpool_backend.model.user.Role;
 import com.tekup.carpool_backend.model.user.User;
-import com.tekup.carpool_backend.model.user.UserRole;
 import com.tekup.carpool_backend.payload.request.*;
+import com.tekup.carpool_backend.payload.response.ErrorResponse;
 import com.tekup.carpool_backend.payload.response.LoginResponse;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
 import com.tekup.carpool_backend.repository.password.ResetPasswordRepository;
 import com.tekup.carpool_backend.repository.token.TokenRepository;
+import com.tekup.carpool_backend.repository.user.RoleRepository;
 import com.tekup.carpool_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,27 +44,44 @@ public class AuthenticationServiceImp implements AuthenticationService {
     private final Otp otpCmp;
     private final EmailSender emailSenderCmp;
     private final ResetPasswordRepository resetPasswordRepository;
-
+    private final RoleRepository roleRepository;
     @Value("${carpool_app.frontend.url}")
     private String frontUrl;
 
-    public MessageResponse register(RegisterRequest request) {
+    public Object register(RegisterRequest request) {
+
+        Set<Role> roles = request.getRoles().stream()
+                .map(
+                        roleName -> roleRepository.findByName(roleName).orElseThrow(
+                                () -> new ResourceNotFoundException("Role not found for name: " + roleName)
+                        )
+                )
+                .collect(Collectors.toSet());
+
+        if (roles.isEmpty()) {
+            return ErrorResponse.builder()
+                    .errors(List.of("Invalid roles provided"))
+                    .http_code(HttpStatus.UNAUTHORIZED.value())
+                    .build();
+        }
+
         String otpCode = otpCmp.generateOtp();
+
         User user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(UserRole.valueOf(request.getRole()))
+                .roles(roles)
                 .otp(otpCode)
                 .otpGeneratedTime(LocalDateTime.now())
                 .build();
-
         User savedUser = userRepository.save(user);
 
         emailSenderCmp.sendOtpVerification(savedUser.getEmail(), otpCode);
         return MessageResponse.builder()
                 .message("Registration done, check your email to verify your account with the OTP code")
+                .http_code(HttpStatus.OK.value())
                 .build();
     }
 
@@ -72,30 +96,41 @@ public class AuthenticationServiceImp implements AuthenticationService {
         tokenRepository.save(token);
     }
 
-    public LoginResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow((ResourceNotFoundException::new));
-        if (user.isVerified()) {
-            String jwtToken = jwtService.generateToken(user);
+    public Object login(LoginRequest request) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+            User user = userRepository.findByEmailWithRoles(request.getEmail()).orElseThrow(
+                    () -> new ResourceNotFoundException("User not found for email: " + request.getEmail())
+            );
+            if (user.isVerified()) {
+                String jwtToken = jwtService.generateToken(user);
 
-            revokeAllUserTokens(user);
-            saveUserToken(user, jwtToken);
+                revokeAllUserTokens(user);
+                saveUserToken(user, jwtToken);
 
-            return LoginResponse.builder()
-                    .token(jwtToken)
-                    .firstName(user.getFirstName())
-                    .lastName(user.getLastName())
-                    .message("Welcome to TEKUP-Carpool project")
+                return LoginResponse.builder()
+                        .token(jwtToken)
+                        .firstName(user.getFirstName())
+                        .lastName(user.getLastName())
+                        .message("Welcome to TEKUP-Carpool project")
+                        .http_code(HttpStatus.OK.value())
+                        .build();
+            }
+            return ErrorResponse.builder()
+                    .errors(List.of("Your account is not verified"))
+                    .http_code(HttpStatus.UNAUTHORIZED.value())
+                    .build();
+        } catch (BadCredentialsException e) {
+            return ErrorResponse.builder()
+                    .errors(List.of("Invalid email or password. Please try again"))
+                    .http_code(HttpStatus.UNAUTHORIZED.value())
                     .build();
         }
-        return LoginResponse.builder()
-                .message("Your account is not verified")
-                .build();
     }
 
     private void revokeAllUserTokens(User user) {
@@ -110,9 +145,11 @@ public class AuthenticationServiceImp implements AuthenticationService {
         tokenRepository.saveAll(validUserTokens);
     }
 
-    public MessageResponse verifyAccount(VerifyAccountRequest request) {
+    public Object verifyAccount(VerifyAccountRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(ResourceNotFoundException::new);
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("User not found for email: " + request.getEmail())
+                );
         LocalDateTime otpGeneratedTime = user.getOtpGeneratedTime();
         LocalDateTime currentTime = LocalDateTime.now();
         long secondsDifference = Duration.between(otpGeneratedTime, currentTime).getSeconds();
@@ -125,26 +162,32 @@ public class AuthenticationServiceImp implements AuthenticationService {
                     userRepository.save(user);
                     return MessageResponse.builder()
                             .message("Your OTP has been successfully verified. You now have access to the platform")
+                            .http_code(HttpStatus.OK.value())
                             .build();
                 } else {
-                    return MessageResponse.builder()
-                            .message("Your account is already verified. You have access to the platform")
+                    return ErrorResponse.builder()
+                            .errors(List.of("Your account is already verified. You have access to the platform"))
+                            .http_code(HttpStatus.UNAUTHORIZED.value())
                             .build();
                 }
             } else {
-                return MessageResponse.builder()
-                        .message("OTP Code expired. Please regenerate another OTP code")
+                return ErrorResponse.builder()
+                        .errors(List.of("OTP Code expired. Please regenerate another OTP code"))
+                        .http_code(HttpStatus.UNAUTHORIZED.value())
                         .build();
             }
         } else {
-            return MessageResponse.builder()
-                    .message("Invalid OTP code")
+            return ErrorResponse.builder()
+                    .errors(List.of("Invalid OTP code"))
+                    .http_code(HttpStatus.UNAUTHORIZED.value())
                     .build();
         }
     }
 
-    public MessageResponse regenerateOtp(RegenerateOtpRequest request) {
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(ResourceNotFoundException::new);
+    public Object regenerateOtp(RegenerateOtpRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
+                () -> new ResourceNotFoundException("User not found for email: " + request.getEmail())
+        );
         if (!user.isVerified()) {
             String otpCode = otpCmp.generateOtp();
             user.setOtp(otpCode);
@@ -155,20 +198,25 @@ public class AuthenticationServiceImp implements AuthenticationService {
 
             return MessageResponse.builder()
                     .message("A new OTP code has been generated and sent to your email")
+                    .http_code(HttpStatus.OK.value())
                     .build();
         } else {
-            return MessageResponse.builder()
-                    .message("Your account is already verified. You have access to the platform")
+            return ErrorResponse.builder()
+                    .errors(List.of("Your account is already verified. You have access to the platform"))
+                    .http_code(HttpStatus.UNAUTHORIZED.value())
                     .build();
         }
     }
 
     public MessageResponse forgotPassword(ForgotPasswordRequest request) {
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
+                () -> new ResourceNotFoundException("User not found for email: " + request.getEmail())
+        );
         String url = generateResetToken(user);
         emailSenderCmp.sendResetPassword(request.getEmail(), url);
         return MessageResponse.builder()
                 .message("Password reset instructions have been sent to your email")
+                .http_code(HttpStatus.OK.value())
                 .build();
     }
 
@@ -187,24 +235,22 @@ public class AuthenticationServiceImp implements AuthenticationService {
         return frontUrl + "/reset-password/" + token.getToken();
     }
 
-    public MessageResponse resetPassword(String token, ResetPasswordRequest request) {
-        if (request.getNewPassword().equals(request.getConfirmationPassword())) {
-            ResetPassword resetPassword = resetPasswordRepository.findByToken(token).orElseThrow();
-            if (isResetPasswordTokenValid(resetPassword.getExpirationDate())) {
-                User user = resetPassword.getUser();
-                user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-                userRepository.save(user);
-                return MessageResponse.builder()
-                        .message("Password has been changed")
-                        .build();
-            } else {
-                return MessageResponse.builder()
-                        .message("Something went wrong")
-                        .build();
-            }
-        } else {
+    public Object resetPassword(String token, ResetPasswordRequest request) {
+        ResetPassword resetPassword = resetPasswordRepository.findByToken(token).orElseThrow(
+                () -> new ResourceNotFoundException("Token not found for token: " + token)
+        );
+        if (isResetPasswordTokenValid(resetPassword.getExpirationDate())) {
+            User user = resetPassword.getUser();
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(user);
             return MessageResponse.builder()
-                    .message("New Password and Password Confirmation do not match")
+                    .message("Password has been changed")
+                    .http_code(HttpStatus.OK.value())
+                    .build();
+        } else {
+            return ErrorResponse.builder()
+                    .errors(List.of("Something went wrong"))
+                    .http_code(HttpStatus.UNAUTHORIZED.value())
                     .build();
         }
     }

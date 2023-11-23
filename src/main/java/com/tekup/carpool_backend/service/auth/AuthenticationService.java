@@ -6,15 +6,15 @@ import com.tekup.carpool_backend.payload.response.LoginResponse;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
 
 public interface AuthenticationService {
-    MessageResponse register(RegisterRequest request);
+    Object register(RegisterRequest request);
 
-    LoginResponse login(LoginRequest request);
+    Object login(LoginRequest request);
 
-    MessageResponse verifyAccount(VerifyAccountRequest request);
+    Object verifyAccount(VerifyAccountRequest request);
 
-    MessageResponse regenerateOtp(RegenerateOtpRequest request);
+    Object regenerateOtp(RegenerateOtpRequest request);
 
-    MessageResponse forgotPassword(ForgotPasswordRequest request);
+    Object forgotPassword(ForgotPasswordRequest request);
 
-    MessageResponse resetPassword(String token, ResetPasswordRequest request);
+    Object resetPassword(String token, ResetPasswordRequest request);
 }
