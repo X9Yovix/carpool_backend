@@ -58,13 +58,14 @@ public class User implements UserDetails {
     @OneToOne(mappedBy = "user")
     private ResetPassword resetPasswordToken;
 
-    public User(Long id, String firstName, String lastName, String email, String password, UserRole role) {
+    public User(Long id, String firstName, String lastName, String email, String password, UserRole role,boolean verified) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.verified = verified;
     }
 
     @Override
