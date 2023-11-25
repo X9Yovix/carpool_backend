@@ -9,17 +9,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateRequest {
-    private int id;
-    private String departure;
+public class SaveCarRequest {
+    private String matricule;
+    private String brand;
+    private String color;
 
-    private String arrival;
-
-    private int nbPlacesAv;
-
-    private float price ;
-
-    private String time;
+    private int nbPlaces;
 
 
 }

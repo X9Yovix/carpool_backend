@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 
 @Service
-public class JwtService {
+public class  JwtService {
     @Value("${carpool_app.security.jwt.secret}")
     private String jwtSecret;
     @Value("${carpool_app.security.jwt.expiration}")

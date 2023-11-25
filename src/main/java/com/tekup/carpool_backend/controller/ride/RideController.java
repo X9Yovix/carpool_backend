@@ -1,43 +1,65 @@
 package com.tekup.carpool_backend.controller.ride;
 
 import com.tekup.carpool_backend.model.Ride.Ride;
+import com.tekup.carpool_backend.payload.request.SaveRideRequest;
+import com.tekup.carpool_backend.payload.request.UpdateRequest;
+import com.tekup.carpool_backend.payload.response.MessageResponse;
 import com.tekup.carpool_backend.service.Ride.RideService;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
+import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/Rides")
+@RequestMapping("/rides")
 public class RideController {
-    private RideService service ;
+    private final RideService service ;
 
     public RideController(  RideService service ){
         this.service=service;
     }
     @PostMapping
-    public Ride save(@RequestBody Ride r) { return service.save(r);}
-    @GetMapping("/depart/{dep}")
-    public List<Ride> findByDep (@PathVariable String dep){
-        return service.findByDep(dep);
-    }
-    @GetMapping("/arrivee/{arr}")
-    public List<Ride> findByArr( @PathVariable String arr){
-        return service.findByArr(arr);
-    }
-    @GetMapping("/date/{time}")
-    public List<Ride> findByTime( @PathVariable String time){
-        return service.findByTime(time);
-    }
+    //,Principal connectedUser
+    public ResponseEntity<MessageResponse> save(@RequestBody SaveRideRequest request) {
+        return ResponseEntity.ok(service.save(request));
 
+    }
     @GetMapping
-    public List<Ride> findAllRides() {
+    public List<Ride>  findAllRides() {
+
         return service.findAllRides();
     }
-    @PutMapping
-    public Ride updateRide(@RequestBody  Ride r){
-        return service.update(r);
+    @GetMapping("filter/limit")
+    public List<Ride>  findWithLimit() {
+
+        return service.findWithLimit();
     }
-    @DeleteMapping("/{idR}")
-    public void delete(@PathVariable int idR){
-        service.delete(idR);}
+
+    @GetMapping("filter/departure/{departure}")
+    public List<Ride> findByDeparture (@PathVariable String departure){
+        return service.findByDeparture(departure);
+    }
+    @GetMapping("filter/arrival/{arrival}")
+    public List<Ride> findByArrival( @PathVariable String arrival){
+        return service.findByArrival(arrival);
+    }
+    @GetMapping("filter/time/{time}")
+    public List<Ride> findByTime( @PathVariable LocalDateTime time){
+        return service.findByTime(LocalDateTime.parse(String.valueOf(time)));
+    }
+
+
+    @PatchMapping
+    public ResponseEntity<MessageResponse> updateRide(@RequestBody UpdateRequest request){
+        return ResponseEntity.ok(service.update(request));
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<MessageResponse> delete(@PathVariable int id){
+        return ResponseEntity.ok(service.delete(id));
+
+    }
 }

@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateRequest {
-    private int id;
+public class SaveRideRequest {
+
     private String departure;
 
     private String arrival;
@@ -20,6 +20,5 @@ public class UpdateRequest {
     private float price ;
 
     private String time;
-
 
 }
