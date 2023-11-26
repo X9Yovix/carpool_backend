@@ -1,15 +1,12 @@
 package com.tekup.carpool_backend.model.token;
 
 import com.tekup.carpool_backend.model.user.User;
-import com.tekup.carpool_backend.model.user.UserRole;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
 @Entity
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

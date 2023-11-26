@@ -1,11 +1,14 @@
 package com.tekup.carpool_backend.config;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tekup.carpool_backend.config.jwt.JwtAuthFilter;
-import com.tekup.carpool_backend.model.user.UserRole;
+import com.tekup.carpool_backend.payload.response.MessageResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,7 +41,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(WHITE_LIST_URI)
                         .permitAll()
-                        .requestMatchers("/users/admin").hasAuthority(UserRole.ADMIN.name())
+                        .requestMatchers("/users/admin").hasAuthority("ADMIN")
                         .anyRequest()
                         .authenticated()
                 )
@@ -46,9 +49,19 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout -> logout
-                        .logoutUrl("/auth/logout")
-                        .addLogoutHandler(logoutHandler)
-                        .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
+                                .logoutUrl("/auth/logout")
+                                .addLogoutHandler(logoutHandler)
+                                .logoutSuccessHandler((request, response, authentication) -> {
+                                    SecurityContextHolder.clearContext();
+                                    response.setStatus(HttpServletResponse.SC_OK);
+
+                                    ObjectMapper objectMapper = new ObjectMapper();
+                                    String jsonResponse = objectMapper.writeValueAsString(new MessageResponse("Logout successfully", HttpStatus.OK.value()));
+
+                                    response.setContentType("application/json");
+                                    response.getWriter().write(jsonResponse);
+                                    response.getWriter().flush();
+                                })
                 );
         return http.build();
     }

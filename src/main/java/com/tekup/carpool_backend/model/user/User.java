@@ -4,21 +4,19 @@ package com.tekup.carpool_backend.model.user;
 import com.tekup.carpool_backend.model.password.ResetPassword;
 import com.tekup.carpool_backend.model.token.Token;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@Data
 @Entity
 @Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
@@ -39,10 +37,6 @@ public class User implements UserDetails {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private UserRole role;
-
     @Column(name = "verified", nullable = false, columnDefinition = "boolean default false")
     private boolean verified;
 
@@ -52,24 +46,35 @@ public class User implements UserDetails {
     @Column(name = "otp_generated_time")
     private LocalDateTime otpGeneratedTime;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles;
+
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
 
-    @OneToOne(mappedBy = "user")
-    private ResetPassword resetPasswordToken;
+    @OneToMany(mappedBy = "user")
+    private List<ResetPassword> resetPasswords;
 
-    public User(Long id, String firstName, String lastName, String email, String password, UserRole role) {
+    public User(Long id, String firstName, String lastName, String email, String password, Set<Role> roles, boolean verified) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
-        this.role = role;
+        this.roles = roles;
+        this.verified = verified;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -95,5 +100,20 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", verified=" + verified +
+                ", otp='" + otp + '\'' +
+                ", otpGeneratedTime=" + otpGeneratedTime +
+                ", role=" + roles +
+                '}';
     }
 }

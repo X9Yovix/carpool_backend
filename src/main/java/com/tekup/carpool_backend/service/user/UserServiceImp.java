@@ -1,17 +1,22 @@
 package com.tekup.carpool_backend.service.user;
 
+import com.tekup.carpool_backend.exception.ResourceNotFoundException;
+import com.tekup.carpool_backend.model.user.Role;
 import com.tekup.carpool_backend.model.user.User;
-import com.tekup.carpool_backend.model.user.UserRole;
 import com.tekup.carpool_backend.payload.request.ChangePasswordRequest;
+import com.tekup.carpool_backend.payload.response.ErrorResponse;
+import com.tekup.carpool_backend.payload.response.MessageResponse;
+import com.tekup.carpool_backend.repository.user.RoleRepository;
 import com.tekup.carpool_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -19,27 +24,47 @@ public class UserServiceImp implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
+
+    private void seedRoles() {
+        roleRepository.save(new Role(1L, "ADMIN"));
+        roleRepository.save(new Role(2L, "DRIVER"));
+        roleRepository.save(new Role(3L, "PASSENGER"));
+    }
 
     public boolean seedInitialUsers() {
-        User admin1 = new User(1L, "Ali", "Ben Ali", "admin@gmail.com", BCrypt.hashpw("adminpassword", BCrypt.gensalt()), UserRole.ADMIN);
-        User driver1 = new User(2L, "Saleh", "Ben Saleh", "driver@gmail.com", BCrypt.hashpw("driverpassword", BCrypt.gensalt()), UserRole.DRIVER);
-        User passenger1 = new User(3L, "Mohamed", "Ben Mohamed", "passenger@gmail.com", BCrypt.hashpw("passengerpassword", BCrypt.gensalt()), UserRole.PASSENGER);
+        seedRoles();
+        Role adminRole = roleRepository.findByName("ADMIN").orElseThrow(
+                () -> new ResourceNotFoundException("Role not found for name: ADMIN")
+        );
+        Role driverRole = roleRepository.findByName("DRIVER").orElseThrow(
+                () -> new ResourceNotFoundException("Role not found for name: DRIVER")
+        );
+        Role passengerRole = roleRepository.findByName("PASSENGER").orElseThrow(
+                () -> new ResourceNotFoundException("Role not found for name: PASSENGER")
+        );
+        User admin1 = new User(1L, "Ali", "Ben Ali", "ali@gmail.com", BCrypt.hashpw("alipassword", BCrypt.gensalt()), Collections.singleton(adminRole), true);
+        User driver1 = new User(2L, "Saleh", "Ben Saleh", "saleh@gmail.com", BCrypt.hashpw("salehpassword", BCrypt.gensalt()), Collections.singleton(driverRole), true);
+        User passenger1 = new User(3L, "Mohamed", "Ben Mohamed", "mohamed@gmail.com", BCrypt.hashpw("mohamedpassword", BCrypt.gensalt()), new HashSet<>(Arrays.asList(driverRole, passengerRole)), true);
 
         List<User> savedUsers = userRepository.saveAll(List.of(admin1, driver1, passenger1));
         return !savedUsers.isEmpty();
     }
 
     @Override
-    public String changePassword(ChangePasswordRequest request, Principal connectedUser) {
+    public Object changePassword(ChangePasswordRequest request, Principal connectedUser) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            return "Wrong password";
-        }
-        if (!request.getNewPassword().equals(request.getConfirmationPassword())) {
-            return "NewPassword & ConfirmationPassword are not the same";
+            return ErrorResponse.builder()
+                    .errors(List.of("Current password is wrong"))
+                    .http_code(HttpStatus.UNAUTHORIZED.value())
+                    .build();
         }
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
-        return "Password updated";
+        return MessageResponse.builder()
+                .message("Password updated successfully")
+                .http_code(HttpStatus.OK.value())
+                .build();
     }
 }
