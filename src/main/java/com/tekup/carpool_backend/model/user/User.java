@@ -37,6 +37,12 @@ public class User implements UserDetails {
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Column(name = "phone_number")
+    private Long phoneNumber;
+
+    @Column(name = "address")
+    private String address;
+
     @Column(name = "verified", nullable = false, columnDefinition = "boolean default false")
     private boolean verified;
 
