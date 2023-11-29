@@ -46,23 +46,36 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated()
                 )
+                .exceptionHandling(exception -> exception
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            ObjectMapper objectMapper = new ObjectMapper();
+                            String jsonResponse = objectMapper.writeValueAsString(
+                                    new MessageResponse("Access Denied. You do not have the required role.", HttpStatus.UNAUTHORIZED.value())
+                            );
+                            response.setContentType("application/json");
+                            response.getWriter().write(jsonResponse);
+                            response.getWriter().flush();
+                        })
+                )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout -> logout
-                                .logoutUrl("/auth/logout")
-                                .addLogoutHandler(logoutHandler)
-                                .logoutSuccessHandler((request, response, authentication) -> {
-                                    SecurityContextHolder.clearContext();
-                                    response.setStatus(HttpServletResponse.SC_OK);
-
-                                    ObjectMapper objectMapper = new ObjectMapper();
-                                    String jsonResponse = objectMapper.writeValueAsString(new MessageResponse("Logout successfully", HttpStatus.OK.value()));
-
-                                    response.setContentType("application/json");
-                                    response.getWriter().write(jsonResponse);
-                                    response.getWriter().flush();
-                                })
+                        .logoutUrl("/auth/logout")
+                        .addLogoutHandler(logoutHandler)
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            SecurityContextHolder.clearContext();
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            ObjectMapper objectMapper = new ObjectMapper();
+                            String jsonResponse = objectMapper.writeValueAsString(
+                                    new MessageResponse("Logout successfully", HttpStatus.OK.value())
+                            );
+                            response.setContentType("application/json");
+                            response.getWriter().write(jsonResponse);
+                            response.getWriter().flush();
+                        })
                 );
         return http.build();
     }
