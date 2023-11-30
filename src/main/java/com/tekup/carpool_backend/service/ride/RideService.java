@@ -8,5 +8,6 @@ import java.security.Principal;
 public interface RideService {
     Object createRide(AddRideRequest request, Principal connectedUser);
     Object getRidesCreatedByAuthenticatedDriver(Principal connectedUser);
-    public Object filterRides(FilterRideRequest request);
+    Object filterRides(FilterRideRequest request, int page, int size);
+    Object getLatestRides(int page, int size);
 }

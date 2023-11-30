@@ -28,7 +28,9 @@ public class SecurityConfig {
     private static final String[] WHITE_LIST_URI = {
             "/users/seed",
             "/auth/**",
-            "/rides/filter"
+            "/rides/filter",
+            "/rides/latest",
+            "/rides/generate",
     };
     private final JwtAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;

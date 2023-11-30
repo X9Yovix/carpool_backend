@@ -12,6 +12,9 @@ import com.tekup.carpool_backend.repository.ride.RideRepository;
 import com.tekup.carpool_backend.repository.user.CarRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -79,19 +82,21 @@ public class RideServiceImp implements RideService {
                 .http_code(HttpStatus.OK.value())
                 .build();
     }
+
     @Override
-    public Object filterRides(FilterRideRequest request) {
-        List<Ride> filteredRides = rideRepository.findByFilters(
+    public Object filterRides(FilterRideRequest request, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Ride> filteredRidesPage = rideRepository.findByFilters(
                 request.getDeparture(),
                 request.getDestination(),
                 request.getStatus(),
                 request.getMinPrice(),
-                request.getMaxPrice()
+                request.getMaxPrice(),
+                pageable
         );
-        return formatFilteredResults(filteredRides);
-    }
-    private Object formatFilteredResults(List<Ride> rides) {
-        List<RideResponse.RideInfo> rideInfo = rides.stream()
+
+        List<RideResponse.RideInfo> rideInfo = filteredRidesPage.getContent().stream()
                 .map(ride -> new RideResponse.RideInfo(
                         ride.getId(),
                         ride.getDepartureLocation(),
@@ -106,6 +111,33 @@ public class RideServiceImp implements RideService {
                         ride.getCar().getSeats()
                 ))
                 .collect(Collectors.toList());
+
+        return RideResponse.builder()
+                .rides(rideInfo)
+                .http_code(HttpStatus.OK.value())
+                .build();
+    }
+
+    public Object getLatestRides(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Ride> latestRidesPage = rideRepository.findAllByOrderByDepartureDateDesc(pageable);
+
+        List<RideResponse.RideInfo> rideInfo = latestRidesPage.getContent().stream()
+                .map(ride -> new RideResponse.RideInfo(
+                        ride.getId(),
+                        ride.getDepartureLocation(),
+                        ride.getDestinationLocation(),
+                        ride.getDepartureDate(),
+                        ride.getStatus().toString(),
+                        ride.getPrice(),
+                        ride.getCar().getId(),
+                        ride.getCar().getBrand(),
+                        ride.getCar().getModel(),
+                        ride.getCar().getColor(),
+                        ride.getCar().getSeats()
+                ))
+                .collect(Collectors.toList());
+
         return RideResponse.builder()
                 .rides(rideInfo)
                 .http_code(HttpStatus.OK.value())
