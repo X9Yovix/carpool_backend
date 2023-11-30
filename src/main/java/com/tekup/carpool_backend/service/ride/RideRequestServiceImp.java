@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -66,7 +67,8 @@ public class RideRequestServiceImp implements RideRequestService {
     @Override
     public RideRequestResponse getAppliedRides(User passenger, RideRequestStatus status, int page, int size) {
         Page<RideRequest> rideRequests;
-        Pageable pageable = PageRequest.of(page, size);
+        //Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("requestDate").descending());
 
         if (status != null) {
             rideRequests = rideRequestRepository.findByPassengerAndStatus(passenger, status, pageable);
@@ -98,7 +100,9 @@ public class RideRequestServiceImp implements RideRequestService {
 
     @Override
     public Object getRequestedRidesForDriver(Principal connectedUser, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        //Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("requestDate").descending());
+
         User driver = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         Page<RideRequest> requestedRides = rideRequestRepository.findByRide_DriverAndStatus(driver, RideRequestStatus.PENDING, pageable);
 
