@@ -11,4 +11,6 @@ public interface RideRequestService {
 
     Object getAppliedRides(User passenger, RideRequestStatus status, int page, int size);
 
+    Object getRequestedRidesForDriver(Principal connectedUser, int page, int size);
+
 }

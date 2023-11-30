@@ -19,6 +19,13 @@ public class RideRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "request_date", nullable = false)
+    private LocalDateTime requestDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private RideRequestStatus status;
+
     @ManyToOne
     @JoinColumn(name = "passenger_id", nullable = false)
     private User passenger;
@@ -26,11 +33,4 @@ public class RideRequest {
     @ManyToOne
     @JoinColumn(name = "ride_id", nullable = false)
     private Ride ride;
-
-    @Column(name = "request_date", nullable = false)
-    private LocalDateTime requestDate;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private RideRequestStatus status;
 }

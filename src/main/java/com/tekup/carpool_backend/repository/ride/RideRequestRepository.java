@@ -14,4 +14,6 @@ public interface RideRequestRepository extends JpaRepository<RideRequest, Long> 
     Page<RideRequest> findByPassengerAndStatus(User passenger, RideRequestStatus status, Pageable pageable);
 
     Page<RideRequest> findByPassenger(User passenger, Pageable pageable);
+
+    Page<RideRequest> findByRide_DriverAndStatus(User driver, RideRequestStatus status, Pageable pageable);
 }

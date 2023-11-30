@@ -32,4 +32,13 @@ public class RideRequestController {
         User passenger = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         return ResponseEntity.ok(rideRequestService.getAppliedRides(passenger, status, page, size));
     }
+
+    @GetMapping("/driver")
+    public ResponseEntity<Object> getRequestedRidesForDriver(
+            Principal connectedUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(rideRequestService.getRequestedRidesForDriver(connectedUser, page, size));
+    }
 }

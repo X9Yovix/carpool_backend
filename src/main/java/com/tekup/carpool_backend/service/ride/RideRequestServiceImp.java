@@ -95,4 +95,32 @@ public class RideRequestServiceImp implements RideRequestService {
                 .http_code(HttpStatus.OK.value())
                 .build();
     }
+
+    @Override
+    public Object getRequestedRidesForDriver(Principal connectedUser, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        User driver = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        Page<RideRequest>  requestedRides = rideRequestRepository.findByRide_DriverAndStatus(driver, RideRequestStatus.PENDING, pageable);
+
+        List<RideRequestResponse.RideRequestInfo> rideRequestInfo = requestedRides.stream()
+                .map(rideRequest -> {
+                    Ride ride = rideRequest.getRide();
+                    return new RideRequestResponse.RideRequestInfo(
+                            rideRequest.getId(),
+                            rideRequest.getStatus().toString(),
+                            rideRequest.getRequestDate(),
+
+                            ride.getStatus().toString(),
+                            ride.getDepartureDate(),
+                            ride.getDepartureLocation(),
+                            ride.getDestinationLocation()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return RideRequestResponse.builder()
+                .ridesRequest(rideRequestInfo)
+                .http_code(HttpStatus.OK.value())
+                .build();
+    }
 }
