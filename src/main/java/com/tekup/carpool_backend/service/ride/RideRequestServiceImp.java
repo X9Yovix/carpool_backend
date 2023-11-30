@@ -100,7 +100,7 @@ public class RideRequestServiceImp implements RideRequestService {
     public Object getRequestedRidesForDriver(Principal connectedUser, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         User driver = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        Page<RideRequest>  requestedRides = rideRequestRepository.findByRide_DriverAndStatus(driver, RideRequestStatus.PENDING, pageable);
+        Page<RideRequest> requestedRides = rideRequestRepository.findByRide_DriverAndStatus(driver, RideRequestStatus.PENDING, pageable);
 
         List<RideRequestResponse.RideRequestInfo> rideRequestInfo = requestedRides.stream()
                 .map(rideRequest -> {
@@ -120,6 +120,34 @@ public class RideRequestServiceImp implements RideRequestService {
 
         return RideRequestResponse.builder()
                 .ridesRequest(rideRequestInfo)
+                .http_code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @Override
+    public Object acceptRideRequest(Long rideRequestId) {
+        RideRequest rideRequest = rideRequestRepository.findById(rideRequestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ride not found with ID: " + rideRequestId));
+
+        rideRequest.setStatus(RideRequestStatus.ACCEPTED);
+        rideRequestRepository.save(rideRequest);
+
+        return MessageResponse.builder()
+                .message("Ride request accepted successfully.")
+                .http_code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @Override
+    public Object declineRideRequest(Long rideRequestId) {
+        RideRequest rideRequest = rideRequestRepository.findById(rideRequestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ride not found with ID: " + rideRequestId));
+
+        rideRequest.setStatus(RideRequestStatus.DECLINED);
+        rideRequestRepository.save(rideRequest);
+
+        return MessageResponse.builder()
+                .message("Ride request declined.")
                 .http_code(HttpStatus.OK.value())
                 .build();
     }

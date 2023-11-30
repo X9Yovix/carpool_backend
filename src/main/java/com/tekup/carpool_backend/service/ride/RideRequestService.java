@@ -13,4 +13,7 @@ public interface RideRequestService {
 
     Object getRequestedRidesForDriver(Principal connectedUser, int page, int size);
 
+    Object acceptRideRequest(Long rideRequestId);
+    Object declineRideRequest(Long rideRequestId);
+
 }

@@ -41,4 +41,14 @@ public class RideRequestController {
     ) {
         return ResponseEntity.ok(rideRequestService.getRequestedRidesForDriver(connectedUser, page, size));
     }
+
+    @PostMapping("/driver/accept")
+    public ResponseEntity<Object> acceptRideRequest(@RequestParam Long rideRequestId) {
+        return ResponseEntity.ok(rideRequestService.acceptRideRequest(rideRequestId));
+    }
+
+    @PostMapping("/driver/decline")
+    public ResponseEntity<Object> declineRideRequest(@RequestParam Long rideRequestId) {
+        return ResponseEntity.ok(rideRequestService.declineRideRequest(rideRequestId));
+    }
 }
