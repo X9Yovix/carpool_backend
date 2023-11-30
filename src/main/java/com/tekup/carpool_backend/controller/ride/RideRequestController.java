@@ -17,12 +17,12 @@ import java.security.Principal;
 public class RideRequestController {
     private final RideRequestService rideRequestService;
 
-    @PostMapping("/apply")
+    @PostMapping("/passenger/apply")
     public ResponseEntity<Object> applyForRide(@RequestBody ApplyForRideRequest request, Principal connectedUser) {
         return ResponseEntity.ok(rideRequestService.createRideRequest(request, connectedUser));
     }
 
-    @GetMapping("/applied")
+    @GetMapping("/passenger/applied")
     public ResponseEntity<Object> getAppliedRides(
             Principal connectedUser,
             @RequestParam(defaultValue = "0") int page,
