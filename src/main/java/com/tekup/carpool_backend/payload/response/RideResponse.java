@@ -26,7 +26,8 @@ public class RideResponse {
         private String departureLocation;
         private String destinationLocation;
         private LocalDateTime departureDate;
-        private String rideStatus;
+        private String status;
+        private Double price;
         private Long carId;
         private String carBrand;
         private String carModel;

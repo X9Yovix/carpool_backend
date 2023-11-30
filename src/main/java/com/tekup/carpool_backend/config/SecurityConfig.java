@@ -28,6 +28,7 @@ public class SecurityConfig {
     private static final String[] WHITE_LIST_URI = {
             "/users/seed",
             "/auth/**",
+            "/rides/filter"
     };
     private final JwtAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
@@ -43,7 +44,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/users/admin").hasAuthority("ADMIN")
                         .requestMatchers("/cars/**").hasAuthority("DRIVER")
-                        .requestMatchers("/rides/**").hasAuthority("DRIVER")
+                        .requestMatchers("/rides/driver/**").hasAuthority("DRIVER")
                         .anyRequest()
                         .authenticated()
                 )

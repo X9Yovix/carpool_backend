@@ -14,5 +14,6 @@ public class AddRideRequest {
     private String departureLocation;
     private String destinationLocation;
     private LocalDateTime departureDate;
+    private Double price;
     private Long card_id;
 }

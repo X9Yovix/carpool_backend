@@ -30,8 +30,11 @@ public class Ride {
     private LocalDateTime departureDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "ride_status", nullable = false)
-    private RideStatus rideStatus;
+    @Column(name = "status", nullable = false)
+    private RideStatus status;
+    
+    @Column(name = "price", nullable = false)
+    private Double price;
 
     @ManyToOne
     @JoinColumn(name = "driver_id", nullable = false)

@@ -5,6 +5,7 @@ import com.tekup.carpool_backend.model.ride.RideStatus;
 import com.tekup.carpool_backend.model.user.Car;
 import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.payload.request.AddRideRequest;
+import com.tekup.carpool_backend.payload.request.FilterRideRequest;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
 import com.tekup.carpool_backend.payload.response.RideResponse;
 import com.tekup.carpool_backend.repository.ride.RideRepository;
@@ -37,7 +38,8 @@ public class RideServiceImp implements RideService {
                 .departureLocation(request.getDepartureLocation())
                 .destinationLocation(request.getDestinationLocation())
                 .departureDate(request.getDepartureDate())
-                .rideStatus(RideStatus.ACTIVE)
+                .price(request.getPrice())
+                .status(RideStatus.ACTIVE)
                 .car(car)
                 .driver(authUser)
                 .build();
@@ -56,26 +58,14 @@ public class RideServiceImp implements RideService {
 
         List<Ride> rides = rideRepository.findByDriverId(authUser.getId());
 
-        /*
-        List<Ride> simplifiedRides = rides.stream()
-                .peek(ride -> {
-                    ride.setDriver(null);
-                    ride.getCar().setUser(null);
-                })
-                .collect(Collectors.toList());
-        return RideResponse.builder()
-                        .rides(rideResponses)
-                        .http_code(HttpStatus.OK.value())
-                        .build();
-         */
-
-        List<RideResponse.RideInfo> rideInfos = rides.stream()
+        List<RideResponse.RideInfo> rideInfo = rides.stream()
                 .map(ride -> new RideResponse.RideInfo(
                         ride.getId(),
                         ride.getDepartureLocation(),
                         ride.getDestinationLocation(),
                         ride.getDepartureDate(),
-                        ride.getRideStatus().toString(),
+                        ride.getStatus().toString(),
+                        ride.getPrice(),
                         ride.getCar().getId(),
                         ride.getCar().getBrand(),
                         ride.getCar().getModel(),
@@ -85,10 +75,40 @@ public class RideServiceImp implements RideService {
                 .collect(Collectors.toList());
 
         return RideResponse.builder()
-                .rides(rideInfos)
+                .rides(rideInfo)
                 .http_code(HttpStatus.OK.value())
                 .build();
-
-
+    }
+    @Override
+    public Object filterRides(FilterRideRequest request) {
+        List<Ride> filteredRides = rideRepository.findByFilters(
+                request.getDeparture(),
+                request.getDestination(),
+                request.getStatus(),
+                request.getMinPrice(),
+                request.getMaxPrice()
+        );
+        return formatFilteredResults(filteredRides);
+    }
+    private Object formatFilteredResults(List<Ride> rides) {
+        List<RideResponse.RideInfo> rideInfo = rides.stream()
+                .map(ride -> new RideResponse.RideInfo(
+                        ride.getId(),
+                        ride.getDepartureLocation(),
+                        ride.getDestinationLocation(),
+                        ride.getDepartureDate(),
+                        ride.getStatus().toString(),
+                        ride.getPrice(),
+                        ride.getCar().getId(),
+                        ride.getCar().getBrand(),
+                        ride.getCar().getModel(),
+                        ride.getCar().getColor(),
+                        ride.getCar().getSeats()
+                ))
+                .collect(Collectors.toList());
+        return RideResponse.builder()
+                .rides(rideInfo)
+                .http_code(HttpStatus.OK.value())
+                .build();
     }
 }
