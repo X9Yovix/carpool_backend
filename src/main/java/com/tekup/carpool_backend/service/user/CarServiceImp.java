@@ -1,10 +1,10 @@
 package com.tekup.carpool_backend.service.user;
 
-import com.tekup.carpool_backend.model.car.Car;
+import com.tekup.carpool_backend.model.user.Car;
 import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.payload.request.AddCarRequest;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
-import com.tekup.carpool_backend.repository.car.CarRepository;
+import com.tekup.carpool_backend.repository.user.CarRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

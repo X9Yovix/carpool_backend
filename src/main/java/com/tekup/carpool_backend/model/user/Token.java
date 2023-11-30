@@ -1,11 +1,7 @@
-package com.tekup.carpool_backend.model.password;
+package com.tekup.carpool_backend.model.user;
 
-import com.tekup.carpool_backend.model.user.User;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
-
 
 @Entity
 @Getter
@@ -13,8 +9,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "reset_password")
-public class ResetPassword {
+@Table(name = "tokens")
+public class Token {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,11 +18,17 @@ public class ResetPassword {
     @Column(name = "token", nullable = false)
     private String token;
 
-    @Column(name = "expiration_date", nullable = false)
-    private LocalDateTime expirationDate;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "token_type", nullable = false)
+    private TokenType tokenType;
+
+    @Column(name = "expired", nullable = false)
+    private boolean expired;
+
+    @Column(name = "revoked", nullable = false)
+    private boolean revoked;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
 }

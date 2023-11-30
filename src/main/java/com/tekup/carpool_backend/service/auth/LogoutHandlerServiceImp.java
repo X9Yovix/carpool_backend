@@ -1,7 +1,7 @@
 package com.tekup.carpool_backend.service.auth;
 
 import com.tekup.carpool_backend.exception.ResourceNotFoundException;
-import com.tekup.carpool_backend.repository.token.TokenRepository;
+import com.tekup.carpool_backend.repository.user.TokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

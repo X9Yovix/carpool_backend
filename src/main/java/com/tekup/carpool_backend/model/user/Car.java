@@ -1,6 +1,5 @@
-package com.tekup.carpool_backend.model.car;
+package com.tekup.carpool_backend.model.user;
 
-import com.tekup.carpool_backend.model.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -1,6 +1,6 @@
-package com.tekup.carpool_backend.repository.token;
+package com.tekup.carpool_backend.repository.user;
 
-import com.tekup.carpool_backend.model.token.Token;
+import com.tekup.carpool_backend.model.user.Token;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

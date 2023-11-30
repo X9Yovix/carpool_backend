@@ -1,7 +1,6 @@
-package com.tekup.carpool_backend.repository.password;
+package com.tekup.carpool_backend.repository.user;
 
-import com.tekup.carpool_backend.model.password.ResetPassword;
-import com.tekup.carpool_backend.model.token.Token;
+import com.tekup.carpool_backend.model.user.ResetPassword;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/users/admin").hasAuthority("ADMIN")
                         .requestMatchers("/cars/**").hasAuthority("DRIVER")
+                        .requestMatchers("/rides/**").hasAuthority("DRIVER")
                         .anyRequest()
                         .authenticated()
                 )

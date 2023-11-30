@@ -1,6 +1,6 @@
 package com.tekup.carpool_backend.config.jwt;
 
-import com.tekup.carpool_backend.repository.token.TokenRepository;
+import com.tekup.carpool_backend.repository.user.TokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

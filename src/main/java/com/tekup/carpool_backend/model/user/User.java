@@ -1,9 +1,7 @@
 package com.tekup.carpool_backend.model.user;
 
 
-import com.tekup.carpool_backend.model.car.Car;
-import com.tekup.carpool_backend.model.password.ResetPassword;
-import com.tekup.carpool_backend.model.token.Token;
+import com.tekup.carpool_backend.model.ride.Ride;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -69,6 +67,9 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user")
     private List<Car> cars;
+
+    @OneToMany(mappedBy = "driver")
+    private List<Ride> rides;
 
     public User(Long id, String firstName, String lastName, String email, String password, Set<Role> roles, boolean verified) {
         this.id = id;
