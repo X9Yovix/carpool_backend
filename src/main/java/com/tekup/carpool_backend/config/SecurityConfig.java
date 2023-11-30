@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/cars/**").hasAuthority("DRIVER")
                         .requestMatchers("/rides/driver/**").hasAuthority("DRIVER")
                         .requestMatchers("/ride-requests/apply").hasAuthority("PASSENGER")
+                        .requestMatchers("/ride-requests/applied").hasAuthority("PASSENGER")
                         .anyRequest()
                         .authenticated()
                 )

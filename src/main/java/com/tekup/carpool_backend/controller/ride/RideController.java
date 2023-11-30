@@ -42,21 +42,14 @@ public class RideController {
     @PostMapping("/generate")
     public Object generateRides() {
         Car car = carRepository.findById(1L).orElseThrow();
-
-        LocalDateTime currentDate = LocalDateTime.now();
-        String departureCity = getRandomCity();
-        String destinationCity = getRandomCity();
-        RideStatus status = getRandomRideStatus();
-
         for (int i = 0; i < 30; i++) {
-            LocalDateTime departureDate = currentDate.plusHours(i);
 
             Ride ride = Ride.builder()
-                    .departureLocation(departureCity)
-                    .destinationLocation(destinationCity)
-                    .departureDate(departureDate)
+                    .departureLocation(getRandomCity())
+                    .destinationLocation(getRandomCity())
+                    .departureDate(LocalDateTime.now().plusHours(i))
                     .price(i + 0.0)
-                    .status(status)
+                    .status(getRandomRideStatus())
                     .car(car)
                     .driver(car.getUser())
                     .build();
