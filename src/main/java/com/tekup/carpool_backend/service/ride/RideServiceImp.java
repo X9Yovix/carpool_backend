@@ -35,7 +35,7 @@ public class RideServiceImp implements RideService {
         User authUser = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         entityManager.detach(authUser);
 
-        Car car = carRepository.findById(request.getCard_id()).orElseThrow();
+        Car car = carRepository.findById(request.getCardId()).orElseThrow();
 
         Ride ride = Ride.builder()
                 .departureLocation(request.getDepartureLocation())

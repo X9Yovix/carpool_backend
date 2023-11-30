@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Builder
@@ -43,4 +44,7 @@ public class Ride {
     @ManyToOne
     @JoinColumn(name = "car_id", nullable = false)
     private Car car;
+
+    @OneToMany(mappedBy = "ride")
+    private List<RideRequest> rideRequests;
 }
