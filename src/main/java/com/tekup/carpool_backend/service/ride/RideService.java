@@ -6,4 +6,5 @@ import java.security.Principal;
 
 public interface RideService {
     Object createRide(AddRideRequest request, Principal connectedUser);
+    Object getRidesCreatedByAuthenticatedDriver(Principal connectedUser);
 }
