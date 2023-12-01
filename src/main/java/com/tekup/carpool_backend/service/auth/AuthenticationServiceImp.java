@@ -72,6 +72,8 @@ public class AuthenticationServiceImp implements AuthenticationService {
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .address(request.getAddress())
+                .phoneNumber(request.getPhoneNumber())
                 .roles(roles)
                 .otp(otpCode)
                 .otpGeneratedTime(LocalDateTime.now())
@@ -117,6 +119,8 @@ public class AuthenticationServiceImp implements AuthenticationService {
                         .token(jwtToken)
                         .firstName(user.getFirstName())
                         .lastName(user.getLastName())
+                        .address(user.getAddress())
+                        .phoneNumber(user.getPhoneNumber())
                         .message("Welcome to TEKUP-Carpool project")
                         .http_code(HttpStatus.OK.value())
                         .build();

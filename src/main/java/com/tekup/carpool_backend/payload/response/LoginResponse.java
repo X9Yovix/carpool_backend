@@ -10,6 +10,8 @@ import lombok.*;
 public class LoginResponse {
     private String firstName;
     private String lastName;
+    private String address;
+    private String phoneNumber;
     private String token;
     private String message;
     private int http_code;

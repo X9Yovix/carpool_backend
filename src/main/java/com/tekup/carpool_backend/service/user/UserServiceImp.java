@@ -43,9 +43,9 @@ public class UserServiceImp implements UserService {
         Role passengerRole = roleRepository.findByName("PASSENGER").orElseThrow(
                 () -> new ResourceNotFoundException("Role not found for name: PASSENGER")
         );
-        User admin1 = new User(1L, "Ali", "Ben Ali", "ali@gmail.com", BCrypt.hashpw("alipassword", BCrypt.gensalt()), Collections.singleton(adminRole), true);
-        User driver1 = new User(2L, "Saleh", "Ben Saleh", "saleh@gmail.com", BCrypt.hashpw("salehpassword", BCrypt.gensalt()), Collections.singleton(driverRole), true);
-        User passenger1 = new User(3L, "Mohamed", "Ben Mohamed", "mohamed@gmail.com", BCrypt.hashpw("mohamedpassword", BCrypt.gensalt()), new HashSet<>(Arrays.asList(driverRole, passengerRole)), true);
+        User admin1 = new User(1L, "Ali", "Ben Ali", "ali@gmail.com", BCrypt.hashpw("alipassword", BCrypt.gensalt()),"Rades Meliane", "123456789", Collections.singleton(adminRole), true);
+        User driver1 = new User(2L, "Saleh", "Ben Saleh", "saleh@gmail.com", BCrypt.hashpw("salehpassword", BCrypt.gensalt()),"Centre ville, Tunis", "123456789", Collections.singleton(driverRole), true);
+        User passenger1 = new User(3L, "Mohamed", "Ben Mohamed", "mohamed@gmail.com", BCrypt.hashpw("mohamedpassword", BCrypt.gensalt()),"Technopole, Ariana", "123456789", new HashSet<>(Arrays.asList(driverRole, passengerRole)), true);
 
         List<User> savedUsers = userRepository.saveAll(List.of(admin1, driver1, passenger1));
         return !savedUsers.isEmpty();

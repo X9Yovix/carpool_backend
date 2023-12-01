@@ -36,10 +36,10 @@ public class User implements UserDetails {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "phone_number")
-    private Long phoneNumber;
+    @Column(name = "phone_number", nullable = false)
+    private String phoneNumber;
 
-    @Column(name = "address")
+    @Column(name = "address", nullable = false)
     private String address;
 
     @Column(name = "verified", nullable = false, columnDefinition = "boolean default false")
@@ -71,12 +71,14 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "driver")
     private List<Ride> rides;
 
-    public User(Long id, String firstName, String lastName, String email, String password, Set<Role> roles, boolean verified) {
+    public User(Long id, String firstName, String lastName, String email, String password, String address, String phoneNumber, Set<Role> roles, boolean verified) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
+        this.address = address;
+        this.phoneNumber = phoneNumber;
         this.roles = roles;
         this.verified = verified;
     }
