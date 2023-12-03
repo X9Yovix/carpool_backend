@@ -3,6 +3,7 @@ package com.tekup.carpool_backend.service.user;
 import com.tekup.carpool_backend.model.user.Car;
 import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.payload.request.AddCarRequest;
+import com.tekup.carpool_backend.payload.response.CarResponse;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
 import com.tekup.carpool_backend.repository.user.CarRepository;
 import jakarta.persistence.EntityManager;
@@ -12,6 +13,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +39,30 @@ public class CarServiceImp implements CarService{
         return MessageResponse.builder()
                 .message("Car created successfully")
                 .http_code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @Override
+    public Object getDriverCars(Principal connectedUser) {
+        User authUser = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+
+        entityManager.detach(authUser);
+        Set<CarResponse.CarInfo> driverCars =
+                carRepository.findByUser(authUser)
+                .stream()
+                .map(car -> CarResponse.CarInfo
+                        .builder()
+                        .carSeats(car.getSeats())
+                        .id(car.getId())
+                        .carModel(car.getModel())
+                        .carColor(car.getColor())
+                        .carBrand(car.getBrand())
+                        .build())
+                        .collect(Collectors.toSet());
+
+        return CarResponse.builder()
+                .http_code(HttpStatus.OK.value())
+                .driverCars(driverCars)
                 .build();
     }
 }
