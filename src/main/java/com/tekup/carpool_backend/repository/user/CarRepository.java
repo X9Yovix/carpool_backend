@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Set;
 
 public interface CarRepository extends JpaRepository<Car, Long> {
-    Set<Car> findByUser(User id);
+    Set<Car> findByUser(User user);
 }

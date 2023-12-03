@@ -65,4 +65,19 @@ public class CarServiceImp implements CarService{
                 .driverCars(driverCars)
                 .build();
     }
+
+    @Override
+    public Object deleteCar(Long id, Principal connectedUser) {
+        User authUser = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+
+        entityManager.detach(authUser);
+        Car car=carRepository.findById(id).orElseThrow();
+        // we should check if this car is his car
+        if(car.getUser()==authUser)
+            carRepository.deleteById(id);
+        return MessageResponse.builder()
+                .http_code(HttpStatus.OK.value())
+                .message("Car deleted successfully")
+                .build();
+    }
 }

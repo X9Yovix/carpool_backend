@@ -21,6 +21,10 @@ public class CarController {
     public ResponseEntity<Object> getDriverCars(Principal connectedUser) {
         return ResponseEntity.ok().body(carService.getDriverCars(connectedUser));
     }
+    @DeleteMapping("/delete")
+    public ResponseEntity<Object> deleteCar(@RequestParam Long id, Principal connectedUser) {
+        return ResponseEntity.ok().body(carService.deleteCar(id,connectedUser));
+    }
 
 
 }
