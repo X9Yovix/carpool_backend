@@ -50,6 +50,7 @@ public class CarServiceImp implements CarService{
         Set<CarResponse.CarInfo> driverCars =
                 carRepository.findByUser(authUser)
                 .stream()
+                        .filter(car->!car.isDeleted())
                 .map(car -> CarResponse.CarInfo
                         .builder()
                         .carSeats(car.getSeats())
@@ -64,5 +65,28 @@ public class CarServiceImp implements CarService{
                 .http_code(HttpStatus.OK.value())
                 .driverCars(driverCars)
                 .build();
+    }
+
+    @Override
+    public Object deleteCar(Long id, Principal connectedUser) {
+        User authUser = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+
+        entityManager.detach(authUser);
+        Car car=carRepository.findById(id).orElseThrow();
+        User carOwner=car.getUser();
+        // we should check if this car is his car
+        if (carOwner.equals(authUser)) {
+            car.setDeleted(true);
+            carRepository.save(car);
+            return MessageResponse.builder()
+                    .http_code(HttpStatus.OK.value())
+                    .message("Car deleted successfully")
+                    .build();
+        } else {
+            return MessageResponse.builder()
+                    .http_code(HttpStatus.FORBIDDEN.value())
+                    .message("Error")
+                    .build();
+        }
     }
 }

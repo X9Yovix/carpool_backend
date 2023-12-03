@@ -31,4 +31,8 @@ public class Car {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Column(name="deleted",nullable = false)
+    private boolean deleted=false;
+
 }

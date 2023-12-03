@@ -7,4 +7,6 @@ public interface CarService {
     Object createCar(AddCarRequest request, Principal connectedUser);
 
     Object  getDriverCars(Principal connectedUser);
+
+    Object deleteCar(Long id, Principal connectedUser);
 }
