@@ -74,7 +74,7 @@ public class RideController {
         return ResponseEntity.ok(rideService.getRidesCreatedByAuthenticatedDriver(connectedUser));
     }
 
-    @GetMapping("/filter")
+    @PostMapping("/filter")
     public ResponseEntity<Object> filterRides(
             @RequestBody FilterRideRequest request,
             @RequestParam(defaultValue = "0") int page,
