@@ -7,8 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-//public class CarpoolAppApplication implements CommandLineRunner {
-public class CarpoolAppApplication {
+public class CarpoolAppApplication implements CommandLineRunner {
 
     @Autowired
     private FileStorageService fileStorageService;
@@ -17,11 +16,8 @@ public class CarpoolAppApplication {
         SpringApplication.run(CarpoolAppApplication.class, args);
     }
 
-/*
     @Override
     public void run(String... args) throws Exception {
         fileStorageService.init();
     }
-
- */
 }
