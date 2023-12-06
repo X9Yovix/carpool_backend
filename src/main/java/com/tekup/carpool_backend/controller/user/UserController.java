@@ -1,6 +1,7 @@
 package com.tekup.carpool_backend.controller.user;
 
 import com.tekup.carpool_backend.payload.request.ChangePasswordRequest;
+import com.tekup.carpool_backend.payload.request.UpdateUserDataRequest;
 import com.tekup.carpool_backend.service.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +35,13 @@ public class UserController {
     @PatchMapping("/update/password")
     public ResponseEntity<Object> changePassword(@Valid @RequestBody ChangePasswordRequest request, Principal connectedUser) {
         return ResponseEntity.ok().body(service.changePassword(request, connectedUser));
+    }
+
+    @PatchMapping("/update/data")
+    public ResponseEntity<Object> updateUserData(
+            @Valid @ModelAttribute UpdateUserDataRequest request,
+            Principal connectedUser
+    ) {
+        return ResponseEntity.ok().body(service.updateUserData(request, connectedUser));
     }
 }
