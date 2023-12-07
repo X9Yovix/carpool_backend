@@ -1,6 +1,8 @@
 package com.tekup.carpool_backend.service.ride;
 
+import com.tekup.carpool_backend.exception.ResourceNotFoundException;
 import com.tekup.carpool_backend.model.ride.Ride;
+import com.tekup.carpool_backend.model.ride.RideRequestStatus;
 import com.tekup.carpool_backend.model.ride.RideStatus;
 import com.tekup.carpool_backend.model.user.Car;
 import com.tekup.carpool_backend.model.user.User;
@@ -62,19 +64,24 @@ public class RideServiceImp implements RideService {
         List<Ride> rides = rideRepository.findByDriverId(authUser.getId());
 
         List<RideResponse.RideInfo> rideInfo = rides.stream()
-                .map(ride -> new RideResponse.RideInfo(
-                        ride.getId(),
-                        ride.getDepartureLocation(),
-                        ride.getDestinationLocation(),
-                        ride.getDepartureDate(),
-                        ride.getStatus().toString(),
-                        ride.getPrice(),
-                        ride.getCar().getId(),
-                        ride.getCar().getBrand(),
-                        ride.getCar().getModel(),
-                        ride.getCar().getColor(),
-                        ride.getCar().getSeats()
-                ))
+                .map(ride -> {
+                    int availableSeats = getAvailableSeats(ride.getId());
+
+                    return new RideResponse.RideInfo(
+                            ride.getId(),
+                            ride.getDepartureLocation(),
+                            ride.getDestinationLocation(),
+                            ride.getDepartureDate(),
+                            ride.getStatus().toString(),
+                            ride.getPrice(),
+                            ride.getCar().getId(),
+                            ride.getCar().getBrand(),
+                            ride.getCar().getModel(),
+                            ride.getCar().getColor(),
+                            ride.getCar().getSeats(),
+                            availableSeats
+                    );
+                })
                 .collect(Collectors.toList());
 
         return RideResponse.builder()
@@ -97,19 +104,24 @@ public class RideServiceImp implements RideService {
         );
 
         List<RideResponse.RideInfo> rideInfo = filteredRidesPage.getContent().stream()
-                .map(ride -> new RideResponse.RideInfo(
-                        ride.getId(),
-                        ride.getDepartureLocation(),
-                        ride.getDestinationLocation(),
-                        ride.getDepartureDate(),
-                        ride.getStatus().toString(),
-                        ride.getPrice(),
-                        ride.getCar().getId(),
-                        ride.getCar().getBrand(),
-                        ride.getCar().getModel(),
-                        ride.getCar().getColor(),
-                        ride.getCar().getSeats()
-                ))
+                .map(ride -> {
+                    int availableSeats = getAvailableSeats(ride.getId());
+
+                    return new RideResponse.RideInfo(
+                            ride.getId(),
+                            ride.getDepartureLocation(),
+                            ride.getDestinationLocation(),
+                            ride.getDepartureDate(),
+                            ride.getStatus().toString(),
+                            ride.getPrice(),
+                            ride.getCar().getId(),
+                            ride.getCar().getBrand(),
+                            ride.getCar().getModel(),
+                            ride.getCar().getColor(),
+                            ride.getCar().getSeats(),
+                            availableSeats
+                    );
+                })
                 .collect(Collectors.toList());
 
         return RideResponse.builder()
@@ -123,24 +135,40 @@ public class RideServiceImp implements RideService {
         Page<Ride> latestRidesPage = rideRepository.findAllByOrderByDepartureDateDesc(pageable);
 
         List<RideResponse.RideInfo> rideInfo = latestRidesPage.getContent().stream()
-                .map(ride -> new RideResponse.RideInfo(
-                        ride.getId(),
-                        ride.getDepartureLocation(),
-                        ride.getDestinationLocation(),
-                        ride.getDepartureDate(),
-                        ride.getStatus().toString(),
-                        ride.getPrice(),
-                        ride.getCar().getId(),
-                        ride.getCar().getBrand(),
-                        ride.getCar().getModel(),
-                        ride.getCar().getColor(),
-                        ride.getCar().getSeats()
-                ))
+                .map(ride -> {
+                    int availableSeats = getAvailableSeats(ride.getId());
+
+                    return new RideResponse.RideInfo(
+                            ride.getId(),
+                            ride.getDepartureLocation(),
+                            ride.getDestinationLocation(),
+                            ride.getDepartureDate(),
+                            ride.getStatus().toString(),
+                            ride.getPrice(),
+                            ride.getCar().getId(),
+                            ride.getCar().getBrand(),
+                            ride.getCar().getModel(),
+                            ride.getCar().getColor(),
+                            ride.getCar().getSeats(),
+                            availableSeats
+                    );
+                })
                 .collect(Collectors.toList());
 
         return RideResponse.builder()
                 .rides(rideInfo)
                 .http_code(HttpStatus.OK.value())
                 .build();
+    }
+
+    public int getAvailableSeats(Long rideId) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ride not found with id: " + rideId));
+        int totalSeats = ride.getCar().getSeats();
+        int acceptedSeats = (int) ride.getRideRequests().stream()
+                .filter(request -> request.getStatus() == RideRequestStatus.ACCEPTED)
+                .count();
+
+        return totalSeats - acceptedSeats;
     }
 }

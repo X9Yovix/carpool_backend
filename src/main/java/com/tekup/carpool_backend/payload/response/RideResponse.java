@@ -1,7 +1,5 @@
 package com.tekup.carpool_backend.payload.response;
 
-import com.tekup.carpool_backend.model.ride.Ride;
-import com.tekup.carpool_backend.model.user.Car;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -33,5 +31,6 @@ public class RideResponse {
         private String carModel;
         private String carColor;
         private int carSeats;
+        private int carAvailableSeats;
     }
 }
