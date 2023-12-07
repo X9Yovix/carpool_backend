@@ -13,6 +13,8 @@ import java.util.List;
 public class RideRequestResponse {
     private List<RideRequestResponse.RideRequestInfo> ridesRequest;
     private int http_code;
+    private int totalPages;
+    private long totalElements;
 
     @AllArgsConstructor
     @NoArgsConstructor

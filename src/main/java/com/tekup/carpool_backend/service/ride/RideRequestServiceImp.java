@@ -94,6 +94,8 @@ public class RideRequestServiceImp implements RideRequestService {
 
         return RideRequestResponse.builder()
                 .ridesRequest(rideRequestInfo)
+                .totalPages(rideRequests.getTotalPages())
+                .totalElements(rideRequests.getTotalElements())
                 .http_code(HttpStatus.OK.value())
                 .build();
     }
@@ -124,6 +126,8 @@ public class RideRequestServiceImp implements RideRequestService {
 
         return RideRequestResponse.builder()
                 .ridesRequest(rideRequestInfo)
+                .totalPages(requestedRides.getTotalPages())
+                .totalElements(requestedRides.getTotalElements())
                 .http_code(HttpStatus.OK.value())
                 .build();
     }

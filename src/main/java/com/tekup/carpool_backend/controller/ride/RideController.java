@@ -70,8 +70,12 @@ public class RideController {
     }
 
     @GetMapping("/driver")
-    public ResponseEntity<Object> getRidesCreatedByAuthenticatedDriver(Principal connectedUser) {
-        return ResponseEntity.ok(rideService.getRidesCreatedByAuthenticatedDriver(connectedUser));
+    public ResponseEntity<Object> getRidesCreatedByAuthenticatedDriver(
+            Principal connectedUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(rideService.getRidesCreatedByAuthenticatedDriver(connectedUser,page,size));
     }
 
     @PostMapping("/filter")

@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface RideRepository extends JpaRepository<Ride, Long> {
-    List<Ride> findByDriverId(Long driverId);
+    Page<Ride> findByDriverId(Long driverId, Pageable pageable);
 
     @Query("SELECT r FROM Ride r " +
             "WHERE (COALESCE(:departure, '') = '' OR LOWER(r.departureLocation) LIKE LOWER(CONCAT('%', :departure, '%'))) " +

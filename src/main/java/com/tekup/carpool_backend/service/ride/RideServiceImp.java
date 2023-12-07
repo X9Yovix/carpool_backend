@@ -58,10 +58,11 @@ public class RideServiceImp implements RideService {
     }
 
     @Override
-    public Object getRidesCreatedByAuthenticatedDriver(Principal connectedUser) {
+    public Object getRidesCreatedByAuthenticatedDriver(Principal connectedUser, int page, int size) {
         User authUser = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
-        List<Ride> rides = rideRepository.findByDriverId(authUser.getId());
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Ride> rides = rideRepository.findByDriverId(authUser.getId(),pageable);
 
         List<RideResponse.RideInfo> rideInfo = rides.stream()
                 .map(ride -> {
@@ -86,6 +87,8 @@ public class RideServiceImp implements RideService {
 
         return RideResponse.builder()
                 .rides(rideInfo)
+                .totalPages(rides.getTotalPages())
+                .totalElements(rides.getTotalElements())
                 .http_code(HttpStatus.OK.value())
                 .build();
     }
@@ -126,6 +129,8 @@ public class RideServiceImp implements RideService {
 
         return RideResponse.builder()
                 .rides(rideInfo)
+                .totalPages(filteredRidesPage.getTotalPages())
+                .totalElements(filteredRidesPage.getTotalElements())
                 .http_code(HttpStatus.OK.value())
                 .build();
     }
@@ -157,6 +162,8 @@ public class RideServiceImp implements RideService {
 
         return RideResponse.builder()
                 .rides(rideInfo)
+                .totalPages(latestRidesPage.getTotalPages())
+                .totalElements(latestRidesPage.getTotalElements())
                 .http_code(HttpStatus.OK.value())
                 .build();
     }
