@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -61,7 +62,8 @@ public class RideServiceImp implements RideService {
     public Object getRidesCreatedByAuthenticatedDriver(Principal connectedUser, int page, int size) {
         User authUser = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
-        Pageable pageable = PageRequest.of(page, size);
+        //Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Ride> rides = rideRepository.findByDriverId(authUser.getId(),pageable);
 
         List<RideResponse.RideInfo> rideInfo = rides.stream()
