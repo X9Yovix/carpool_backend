@@ -8,6 +8,7 @@ import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.payload.request.ApplyForRideRequest;
 import com.tekup.carpool_backend.payload.response.ErrorResponse;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
+import com.tekup.carpool_backend.payload.response.RideRequestDriverResponse;
 import com.tekup.carpool_backend.payload.response.RideRequestResponse;
 import com.tekup.carpool_backend.repository.ride.RideRepository;
 import com.tekup.carpool_backend.repository.ride.RideRequestRepository;
@@ -108,10 +109,11 @@ public class RideRequestServiceImp implements RideRequestService {
         User driver = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         Page<RideRequest> requestedRides = rideRequestRepository.findByRide_DriverAndStatus(driver, RideRequestStatus.PENDING, pageable);
 
-        List<RideRequestResponse.RideRequestInfo> rideRequestInfo = requestedRides.stream()
+        List<RideRequestDriverResponse.RideRequestInfo> rideRequestInfo = requestedRides.stream()
                 .map(rideRequest -> {
                     Ride ride = rideRequest.getRide();
-                    return new RideRequestResponse.RideRequestInfo(
+                    User passenger = rideRequest.getPassenger();
+                    return new RideRequestDriverResponse.RideRequestInfo(
                             rideRequest.getId(),
                             rideRequest.getStatus().toString(),
                             rideRequest.getRequestDate(),
@@ -119,12 +121,16 @@ public class RideRequestServiceImp implements RideRequestService {
                             ride.getStatus().toString(),
                             ride.getDepartureDate(),
                             ride.getDepartureLocation(),
-                            ride.getDestinationLocation()
+                            ride.getDestinationLocation(),
+
+                            passenger.getFirstName(),
+                            passenger.getLastName(),
+                            passenger.getImageUrl() != null ? passenger.getImageUrl() : "/uploads/img/default/default_profile.png"
                     );
                 })
                 .collect(Collectors.toList());
 
-        return RideRequestResponse.builder()
+        return RideRequestDriverResponse.builder()
                 .ridesRequest(rideRequestInfo)
                 .totalPages(requestedRides.getTotalPages())
                 .totalElements(requestedRides.getTotalElements())
