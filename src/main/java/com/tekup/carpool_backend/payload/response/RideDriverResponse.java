@@ -10,8 +10,8 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RideRequestResponse {
-    private List<RideRequestResponse.RideRequestInfo> ridesRequest;
+public class RideDriverResponse {
+    private List<RideInfo> rides;
     private int http_code;
     private int totalPages;
     private long totalElements;
@@ -21,14 +21,18 @@ public class RideRequestResponse {
     @Getter
     @Setter
     @ToString
-    public static class RideRequestInfo {
+    public static class RideInfo {
         private Long id;
-        private String statusRideRequest;
-        private LocalDateTime requestDate;
-
-        private String statusRide;
-        private LocalDateTime departureDate;
         private String departureLocation;
         private String destinationLocation;
+        private LocalDateTime departureDate;
+        private String status;
+        private Double price;
+        private Long carId;
+        private String carBrand;
+        private String carModel;
+        private String carColor;
+        private int carSeats;
+        private int carAvailableSeats;
     }
 }

@@ -7,13 +7,12 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginResponse {
+public class UpdateDataResponse {
     private String firstName;
     private String lastName;
     private String address;
     private String phoneNumber;
     private String imgUrl;
-    private String token;
     private String message;
     private int http_code;
 }
