@@ -1,7 +1,6 @@
 package com.tekup.carpool_backend.payload.response;
 
 import lombok.*;
-import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RideResponse {
+public class RideDriverResponse {
     private List<RideInfo> rides;
     private int http_code;
     private int totalPages;
@@ -35,6 +34,5 @@ public class RideResponse {
         private String carColor;
         private int carSeats;
         private int carAvailableSeats;
-        private String driverImageUrl;
     }
 }

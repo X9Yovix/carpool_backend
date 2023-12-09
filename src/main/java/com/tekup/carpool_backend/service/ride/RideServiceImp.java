@@ -9,6 +9,7 @@ import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.payload.request.AddRideRequest;
 import com.tekup.carpool_backend.payload.request.FilterRideRequest;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
+import com.tekup.carpool_backend.payload.response.RideDriverResponse;
 import com.tekup.carpool_backend.payload.response.RideResponse;
 import com.tekup.carpool_backend.repository.ride.RideRepository;
 import com.tekup.carpool_backend.repository.user.CarRepository;
@@ -66,11 +67,11 @@ public class RideServiceImp implements RideService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Ride> rides = rideRepository.findByDriverId(authUser.getId(),pageable);
 
-        List<RideResponse.RideInfo> rideInfo = rides.stream()
+        List<RideDriverResponse.RideInfo> rideInfo = rides.stream()
                 .map(ride -> {
                     int availableSeats = getAvailableSeats(ride.getId());
 
-                    return new RideResponse.RideInfo(
+                    return new RideDriverResponse.RideInfo(
                             ride.getId(),
                             ride.getDepartureLocation(),
                             ride.getDestinationLocation(),
@@ -87,7 +88,7 @@ public class RideServiceImp implements RideService {
                 })
                 .collect(Collectors.toList());
 
-        return RideResponse.builder()
+        return RideDriverResponse.builder()
                 .rides(rideInfo)
                 .totalPages(rides.getTotalPages())
                 .totalElements(rides.getTotalElements())
@@ -111,7 +112,7 @@ public class RideServiceImp implements RideService {
         List<RideResponse.RideInfo> rideInfo = filteredRidesPage.getContent().stream()
                 .map(ride -> {
                     int availableSeats = getAvailableSeats(ride.getId());
-
+                    User driver = ride.getDriver();
                     return new RideResponse.RideInfo(
                             ride.getId(),
                             ride.getDepartureLocation(),
@@ -124,7 +125,8 @@ public class RideServiceImp implements RideService {
                             ride.getCar().getModel(),
                             ride.getCar().getColor(),
                             ride.getCar().getSeats(),
-                            availableSeats
+                            availableSeats,
+                            driver.getImageUrl()
                     );
                 })
                 .collect(Collectors.toList());
@@ -144,7 +146,7 @@ public class RideServiceImp implements RideService {
         List<RideResponse.RideInfo> rideInfo = latestRidesPage.getContent().stream()
                 .map(ride -> {
                     int availableSeats = getAvailableSeats(ride.getId());
-
+                    User driver = ride.getDriver();
                     return new RideResponse.RideInfo(
                             ride.getId(),
                             ride.getDepartureLocation(),
@@ -157,7 +159,8 @@ public class RideServiceImp implements RideService {
                             ride.getCar().getModel(),
                             ride.getCar().getColor(),
                             ride.getCar().getSeats(),
-                            availableSeats
+                            availableSeats,
+                            driver.getImageUrl()
                     );
                 })
                 .collect(Collectors.toList());
