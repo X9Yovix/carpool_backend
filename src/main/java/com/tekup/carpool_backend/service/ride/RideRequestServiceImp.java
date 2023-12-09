@@ -40,12 +40,20 @@ public class RideRequestServiceImp implements RideRequestService {
         User passenger = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         entityManager.detach(passenger);
 
+
         Ride ride = rideRepository.findById(request.getRideId())
                 .orElseThrow(() -> new ResourceNotFoundException("Ride not found with ID: " + request.getRideId()));
 
         if (rideRequestRepository.existsByPassengerAndRide(passenger, ride)) {
             return ErrorResponse.builder()
                     .errors(List.of("You have already requested this ride"))
+                    .http_code(HttpStatus.UNAUTHORIZED.value())
+                    .build();
+        }
+
+        if (ride.getDriver().getId().equals(passenger.getId())) {
+            return ErrorResponse.builder()
+                    .errors(List.of("You cannot apply for your own ride"))
                     .http_code(HttpStatus.UNAUTHORIZED.value())
                     .build();
         }
