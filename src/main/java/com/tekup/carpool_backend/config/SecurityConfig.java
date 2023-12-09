@@ -31,6 +31,7 @@ public class SecurityConfig {
             "/rides/filter",
             "/rides/latest",
             "/rides/generate",
+            "/statistics"
     };
     private final JwtAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
