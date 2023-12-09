@@ -84,9 +84,9 @@ public class UserServiceImp implements UserService {
         user.setAddress(request.getAddress());
         user.setPhoneNumber(request.getPhoneNumber());
 
-        if (request.getImage() != null && !request.getImage().isEmpty()) {
+        if (request.getImgUrl() != null && !request.getImgUrl().isEmpty()) {
             try {
-                String fileName = fileStorageService.storeImg(request.getImage());
+                String fileName = fileStorageService.storeImg(request.getImgUrl());
                 user.setImageUrl("/uploads/img/user/" + fileName);
             } catch (IOException e) {
                 System.out.println(e.getMessage());

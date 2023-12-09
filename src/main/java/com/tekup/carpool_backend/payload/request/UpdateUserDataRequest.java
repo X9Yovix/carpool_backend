@@ -23,5 +23,5 @@ public class UpdateUserDataRequest {
     @NotBlank(message = "Phone number is required")
     private String phoneNumber;
 
-    private MultipartFile image;
+    private MultipartFile imgUrl;
 }
