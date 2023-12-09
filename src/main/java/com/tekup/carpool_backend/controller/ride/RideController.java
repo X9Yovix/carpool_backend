@@ -70,22 +70,26 @@ public class RideController {
     }
 
     @GetMapping("/driver")
-    public ResponseEntity<Object> getRidesCreatedByAuthenticatedDriver(Principal connectedUser) {
-        return ResponseEntity.ok(rideService.getRidesCreatedByAuthenticatedDriver(connectedUser));
+    public ResponseEntity<Object> getRidesCreatedByAuthenticatedDriver(
+            Principal connectedUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        return ResponseEntity.ok(rideService.getRidesCreatedByAuthenticatedDriver(connectedUser,page,size));
     }
 
     @PostMapping("/filter")
     public ResponseEntity<Object> filterRides(
             @RequestBody FilterRideRequest request,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "5") int size
     ) {
         return ResponseEntity.ok(rideService.filterRides(request,page,size));
     }
     @GetMapping("/latest")
     public ResponseEntity<Object> getLatestRides(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "5") int size
     ) {
         return ResponseEntity.ok(rideService.getLatestRides(page, size));
     }

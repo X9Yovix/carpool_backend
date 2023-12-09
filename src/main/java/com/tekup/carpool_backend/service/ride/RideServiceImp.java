@@ -1,12 +1,15 @@
 package com.tekup.carpool_backend.service.ride;
 
+import com.tekup.carpool_backend.exception.ResourceNotFoundException;
 import com.tekup.carpool_backend.model.ride.Ride;
+import com.tekup.carpool_backend.model.ride.RideRequestStatus;
 import com.tekup.carpool_backend.model.ride.RideStatus;
 import com.tekup.carpool_backend.model.user.Car;
 import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.payload.request.AddRideRequest;
 import com.tekup.carpool_backend.payload.request.FilterRideRequest;
 import com.tekup.carpool_backend.payload.response.MessageResponse;
+import com.tekup.carpool_backend.payload.response.RideDriverResponse;
 import com.tekup.carpool_backend.payload.response.RideResponse;
 import com.tekup.carpool_backend.repository.ride.RideRepository;
 import com.tekup.carpool_backend.repository.user.CarRepository;
@@ -15,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -56,29 +60,38 @@ public class RideServiceImp implements RideService {
     }
 
     @Override
-    public Object getRidesCreatedByAuthenticatedDriver(Principal connectedUser) {
+    public Object getRidesCreatedByAuthenticatedDriver(Principal connectedUser, int page, int size) {
         User authUser = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
-        List<Ride> rides = rideRepository.findByDriverId(authUser.getId());
+        //Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Ride> rides = rideRepository.findByDriverId(authUser.getId(),pageable);
 
-        List<RideResponse.RideInfo> rideInfo = rides.stream()
-                .map(ride -> new RideResponse.RideInfo(
-                        ride.getId(),
-                        ride.getDepartureLocation(),
-                        ride.getDestinationLocation(),
-                        ride.getDepartureDate(),
-                        ride.getStatus().toString(),
-                        ride.getPrice(),
-                        ride.getCar().getId(),
-                        ride.getCar().getBrand(),
-                        ride.getCar().getModel(),
-                        ride.getCar().getColor(),
-                        ride.getCar().getSeats()
-                ))
+        List<RideDriverResponse.RideInfo> rideInfo = rides.stream()
+                .map(ride -> {
+                    int availableSeats = getAvailableSeats(ride.getId());
+
+                    return new RideDriverResponse.RideInfo(
+                            ride.getId(),
+                            ride.getDepartureLocation(),
+                            ride.getDestinationLocation(),
+                            ride.getDepartureDate(),
+                            ride.getStatus().toString(),
+                            ride.getPrice(),
+                            ride.getCar().getId(),
+                            ride.getCar().getBrand(),
+                            ride.getCar().getModel(),
+                            ride.getCar().getColor(),
+                            ride.getCar().getSeats(),
+                            availableSeats
+                    );
+                })
                 .collect(Collectors.toList());
 
-        return RideResponse.builder()
+        return RideDriverResponse.builder()
                 .rides(rideInfo)
+                .totalPages(rides.getTotalPages())
+                .totalElements(rides.getTotalElements())
                 .http_code(HttpStatus.OK.value())
                 .build();
     }
@@ -97,23 +110,31 @@ public class RideServiceImp implements RideService {
         );
 
         List<RideResponse.RideInfo> rideInfo = filteredRidesPage.getContent().stream()
-                .map(ride -> new RideResponse.RideInfo(
-                        ride.getId(),
-                        ride.getDepartureLocation(),
-                        ride.getDestinationLocation(),
-                        ride.getDepartureDate(),
-                        ride.getStatus().toString(),
-                        ride.getPrice(),
-                        ride.getCar().getId(),
-                        ride.getCar().getBrand(),
-                        ride.getCar().getModel(),
-                        ride.getCar().getColor(),
-                        ride.getCar().getSeats()
-                ))
+                .map(ride -> {
+                    int availableSeats = getAvailableSeats(ride.getId());
+                    User driver = ride.getDriver();
+                    return new RideResponse.RideInfo(
+                            ride.getId(),
+                            ride.getDepartureLocation(),
+                            ride.getDestinationLocation(),
+                            ride.getDepartureDate(),
+                            ride.getStatus().toString(),
+                            ride.getPrice(),
+                            ride.getCar().getId(),
+                            ride.getCar().getBrand(),
+                            ride.getCar().getModel(),
+                            ride.getCar().getColor(),
+                            ride.getCar().getSeats(),
+                            availableSeats,
+                            driver.getImageUrl() != null ? driver.getImageUrl() : "/uploads/img/default/default_profile.png"
+                    );
+                })
                 .collect(Collectors.toList());
 
         return RideResponse.builder()
                 .rides(rideInfo)
+                .totalPages(filteredRidesPage.getTotalPages())
+                .totalElements(filteredRidesPage.getTotalElements())
                 .http_code(HttpStatus.OK.value())
                 .build();
     }
@@ -123,24 +144,43 @@ public class RideServiceImp implements RideService {
         Page<Ride> latestRidesPage = rideRepository.findAllByOrderByDepartureDateDesc(pageable);
 
         List<RideResponse.RideInfo> rideInfo = latestRidesPage.getContent().stream()
-                .map(ride -> new RideResponse.RideInfo(
-                        ride.getId(),
-                        ride.getDepartureLocation(),
-                        ride.getDestinationLocation(),
-                        ride.getDepartureDate(),
-                        ride.getStatus().toString(),
-                        ride.getPrice(),
-                        ride.getCar().getId(),
-                        ride.getCar().getBrand(),
-                        ride.getCar().getModel(),
-                        ride.getCar().getColor(),
-                        ride.getCar().getSeats()
-                ))
+                .map(ride -> {
+                    int availableSeats = getAvailableSeats(ride.getId());
+                    User driver = ride.getDriver();
+                    return new RideResponse.RideInfo(
+                            ride.getId(),
+                            ride.getDepartureLocation(),
+                            ride.getDestinationLocation(),
+                            ride.getDepartureDate(),
+                            ride.getStatus().toString(),
+                            ride.getPrice(),
+                            ride.getCar().getId(),
+                            ride.getCar().getBrand(),
+                            ride.getCar().getModel(),
+                            ride.getCar().getColor(),
+                            ride.getCar().getSeats(),
+                            availableSeats,
+                            driver.getImageUrl() != null ? driver.getImageUrl() : "/uploads/img/default/default_profile.png"
+                    );
+                })
                 .collect(Collectors.toList());
 
         return RideResponse.builder()
                 .rides(rideInfo)
+                .totalPages(latestRidesPage.getTotalPages())
+                .totalElements(latestRidesPage.getTotalElements())
                 .http_code(HttpStatus.OK.value())
                 .build();
+    }
+
+    public int getAvailableSeats(Long rideId) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ride not found with id: " + rideId));
+        int totalSeats = ride.getCar().getSeats();
+        int acceptedSeats = (int) ride.getRideRequests().stream()
+                .filter(request -> request.getStatus() == RideRequestStatus.ACCEPTED)
+                .count();
+
+        return totalSeats - acceptedSeats;
     }
 }

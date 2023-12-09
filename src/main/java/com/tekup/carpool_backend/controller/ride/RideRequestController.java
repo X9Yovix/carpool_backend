@@ -26,7 +26,7 @@ public class RideRequestController {
     public ResponseEntity<Object> getAppliedRides(
             Principal connectedUser,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) RideRequestStatus status
     ) {
         User passenger = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
@@ -37,7 +37,7 @@ public class RideRequestController {
     public ResponseEntity<Object> getRequestedRidesForDriver(
             Principal connectedUser,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "5") int size
     ) {
         return ResponseEntity.ok(rideRequestService.getRequestedRidesForDriver(connectedUser, page, size));
     }

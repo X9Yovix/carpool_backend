@@ -121,6 +121,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
                         .lastName(user.getLastName())
                         .address(user.getAddress())
                         .phoneNumber(user.getPhoneNumber())
+                        .imgUrl(user.getImageUrl() != null ? user.getImageUrl() : "/uploads/img/default/default_profile.png")
                         .message("Welcome to TEKUP-Carpool project")
                         .http_code(HttpStatus.OK.value())
                         .build();

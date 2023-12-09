@@ -51,6 +51,9 @@ public class User implements UserDetails {
     @Column(name = "otp_generated_time")
     private LocalDateTime otpGeneratedTime;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
