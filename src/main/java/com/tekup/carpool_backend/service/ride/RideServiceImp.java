@@ -126,7 +126,7 @@ public class RideServiceImp implements RideService {
                             ride.getCar().getColor(),
                             ride.getCar().getSeats(),
                             availableSeats,
-                            driver.getImageUrl()
+                            driver.getImageUrl() != null ? driver.getImageUrl() : "/uploads/img/default/default_profile.png"
                     );
                 })
                 .collect(Collectors.toList());
@@ -160,7 +160,7 @@ public class RideServiceImp implements RideService {
                             ride.getCar().getColor(),
                             ride.getCar().getSeats(),
                             availableSeats,
-                            driver.getImageUrl()
+                            driver.getImageUrl() != null ? driver.getImageUrl() : "/uploads/img/default/default_profile.png"
                     );
                 })
                 .collect(Collectors.toList());
