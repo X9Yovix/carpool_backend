@@ -4,6 +4,7 @@ import com.tekup.carpool_backend.model.ride.Ride;
 import com.tekup.carpool_backend.model.user.User;
 import com.tekup.carpool_backend.payload.response.StatResponse;
 import com.tekup.carpool_backend.repository.ride.RideRepository;
+import com.tekup.carpool_backend.repository.ride.RideRequestRepository;
 import com.tekup.carpool_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 public class StatisticsServiceImpli implements StatisticsService {
     private final UserRepository userRepository;
     private final RideRepository rideRepository;
-
+    private final RideRequestRepository rideRequestRepository;
 
     @Override
     public Long getTotalPassenger() {
@@ -60,9 +61,9 @@ public class StatisticsServiceImpli implements StatisticsService {
                 .totalPassengers(getTotalPassenger())
                 .totalDrivers(getTotalDrivers())
                 .totalRidesPerDay(getTotalRidesPerDay())
-                .passengerWithMostRidesFullName(passenger.getFirstName()+" "+passenger.getLastName())
+                .passengerWithMostRidesFullName(passenger.getFirstName() + " " + passenger.getLastName())
                 .passengerWithMostRidesPhoneNumber(passenger.getPhoneNumber())
-                .driverWithMostRidesFullName(driver.getFirstName()+" "+driver.getLastName())
+                .driverWithMostRidesFullName(driver.getFirstName() + " " + driver.getLastName())
                 .driverWithMostRidesPhoneNumber(driver.getPhoneNumber())
                 .totalRidesPerYear(getTotalRidesPerYear())
                 .build();
@@ -78,13 +79,20 @@ public class StatisticsServiceImpli implements StatisticsService {
 
     }
 
+    /*
+        @Override
+        public User getPassengerWithMostRides() {
+            List<User> passengers = userRepository.findAll();
+            return passengers.stream()
+                    .filter(user -> user.getRides() != null)
+                    .max(Comparator.comparingInt(user -> user.getRides().size()))
+                    .orElse(null);
+        }
 
-    @Override
+     */
     public User getPassengerWithMostRides() {
-        List<User> passengers = userRepository.findAll();
-        return passengers.stream()
-                .max(Comparator.comparingLong(u -> u.getRides().size()))
-                .orElse(null);
+        List<User> passengers = rideRequestRepository.findPassengerWithMostRideRequests();
+        return passengers.isEmpty() ? null : passengers.get(0);
     }
 }
 
