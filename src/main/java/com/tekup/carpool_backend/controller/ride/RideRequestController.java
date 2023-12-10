@@ -21,6 +21,11 @@ public class RideRequestController {
     public ResponseEntity<Object> applyForRide(@RequestBody ApplyForRideRequest request, Principal connectedUser) {
         return ResponseEntity.ok(rideRequestService.createRideRequest(request, connectedUser));
     }
+    @PostMapping("/passenger/cancel")
+    public ResponseEntity<Object> cancelRideRequest(@RequestParam long rideRequestId ,Principal connectedUser) {
+        return ResponseEntity.ok(rideRequestService.cancelRideRequest(rideRequestId,connectedUser));
+    }
+
 
     @GetMapping("/passenger/applied")
     public ResponseEntity<Object> getAppliedRides(

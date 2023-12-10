@@ -33,6 +33,20 @@ public class RideRequestServiceImp implements RideRequestService {
     private final RideRequestRepository rideRequestRepository;
     private final EntityManager entityManager;
     private final RideRepository rideRepository;
+    @Override
+    public Object cancelRideRequest(long rideRequestId, Principal connectedUser) {
+        //check if this ride request is from the auth user
+        if (rideRequestRepository.findById(rideRequestId).isEmpty()) {
+            return ErrorResponse.builder()
+                    .errors(List.of("Can't find this ride request ."))
+                    .http_code(HttpStatus.UNAUTHORIZED.value())
+                    .build();
+        }
+        rideRequestRepository.deleteById(rideRequestId);
+        return MessageResponse.builder()
+                .message("Ride request canceled")
+                .http_code(HttpStatus.OK.value())
+                .build();    }
 
     @Override
     public Object createRideRequest(ApplyForRideRequest request, Principal connectedUser) {
