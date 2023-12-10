@@ -31,7 +31,6 @@ public class SecurityConfig {
             "/rides/filter",
             "/rides/latest",
             "/rides/generate",
-            "/uploads/**",
     };
     private final JwtAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
@@ -45,6 +44,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(WHITE_LIST_URI)
                         .permitAll()
+                        .requestMatchers("/statistics").hasAuthority("DRIVER")
                         .requestMatchers("/users/admin").hasAuthority("ADMIN")
                         .requestMatchers("/cars/**").hasAuthority("DRIVER")
                         .requestMatchers("/rides/driver/**").hasAuthority("DRIVER")
