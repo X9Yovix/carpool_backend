@@ -49,11 +49,16 @@ public class UserServiceImp implements UserService {
         Role passengerRole = roleRepository.findByName("PASSENGER").orElseThrow(
                 () -> new ResourceNotFoundException("Role not found for name: PASSENGER")
         );
-        User admin1 = new User(1L, "Ali", "Ben Ali", "ali@gmail.com", BCrypt.hashpw("alipassword", BCrypt.gensalt()), "Rades Meliane", "123456789", Collections.singleton(adminRole), true);
-        User driver1 = new User(2L, "Saleh", "Driver Only", "saleh@gmail.com", BCrypt.hashpw("salehpassword", BCrypt.gensalt()), "Centre ville, Tunis", "123456789", Collections.singleton(driverRole), true);
-        User passenger1 = new User(3L, "Mohamed", "Driver Passenger", "mohamed@gmail.com", BCrypt.hashpw("mohamedpassword", BCrypt.gensalt()), "Technopole, Ariana", "123456789", new HashSet<>(Arrays.asList(driverRole, passengerRole)), true);
 
-        List<User> savedUsers = userRepository.saveAll(List.of(admin1, driver1, passenger1));
+        User user1 = new User(1L, "User1", "Admin", "user1@gmail.com", BCrypt.hashpw("user1password", BCrypt.gensalt()), "Rades", "123456789", Collections.singleton(adminRole), true);
+        User user2 = new User(2L, "User2", "DriverOnly", "user2@gmail.com", BCrypt.hashpw("user2password", BCrypt.gensalt()), "Tunis", "123456789", Collections.singleton(driverRole), true);
+        User user3 = new User(3L, "User3", "DriverPassenger", "user3@gmail.com", BCrypt.hashpw("user3password", BCrypt.gensalt()), "Ariana", "123456789", new HashSet<>(Arrays.asList(driverRole, passengerRole)), true);
+
+        User user4 = new User(4L, "User4", "DriverPassenger", "user4@gmail.com", BCrypt.hashpw("user4password", BCrypt.gensalt()), "Rades", "123456789", new HashSet<>(Arrays.asList(driverRole, passengerRole)), true);
+        User user5 = new User(5L, "User5", "DriverPassenger", "user5@gmail.com", BCrypt.hashpw("user5password", BCrypt.gensalt()), "Tunis", "123456789", new HashSet<>(Arrays.asList(driverRole, passengerRole)), true);
+        User user6 = new User(6L, "User6", "PassengerOnly", "user6@gmail.com", BCrypt.hashpw("user6password", BCrypt.gensalt()), "Ariana", "123456789", Collections.singleton(passengerRole), true);
+
+        List<User> savedUsers = userRepository.saveAll(List.of(user1, user2, user3, user4, user5, user6));
         return !savedUsers.isEmpty();
     }
 
